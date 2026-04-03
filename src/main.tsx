@@ -1,7 +1,23 @@
 import { createRoot } from 'react-dom/client'
 import { PrivyProvider } from '@privy-io/react-auth'
+import { WagmiProvider } from '@privy-io/wagmi'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { sepolia } from 'viem/chains'
+import { wagmiConfig } from '@/lib/wagmi/config'
 import App from './App.tsx'
 import './index.css'
+
+// Shared QueryClient — must live above WagmiProvider
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 300000,
+      gcTime: 600000,
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+})
 
 createRoot(document.getElementById("root")!).render(
   <PrivyProvider
@@ -12,11 +28,18 @@ createRoot(document.getElementById("root")!).render(
         theme: 'dark',
         accentColor: '#3b82f6',
       },
+      defaultChain: sepolia,
+      supportedChains: [sepolia],
       embeddedWallets: {
-        createOnLogin: 'users-without-wallets',
+        ethereum: { createOnLogin: 'users-without-wallets' },
       },
     }}
   >
-    <App />
+    {/* QueryClientProvider must wrap WagmiProvider — wagmi v2 requires it */}
+    <QueryClientProvider client={queryClient}>
+      <WagmiProvider config={wagmiConfig}>
+        <App />
+      </WagmiProvider>
+    </QueryClientProvider>
   </PrivyProvider>
 );

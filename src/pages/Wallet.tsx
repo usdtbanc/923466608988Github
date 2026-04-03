@@ -28,6 +28,8 @@ import { useEvmWallet } from '@/hooks/useEvmWallet';
 import { TwoFactorVerifyModal } from '@/components/TwoFactorVerifyModal';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { usePolygonUsdtBalance } from '@/hooks/usePolygonUsdtBalance';
+import { usePolygonSend } from '@/hooks/usePolygonSend';
 
 const supportedTokens = [
   { symbol: 'USDT', name: 'Tether', networks: ['TRC-20', 'ERC-20', 'BEP-20'], color: 'bg-green-500', coingeckoId: 'tether' },
@@ -48,8 +50,46 @@ export const Wallet = () => {
   const [show2FAModal, setShow2FAModal] = useState(false);
   const [walletVerified, setWalletVerified] = useState(false);
   const [activeTab, setActiveTab] = useState('tokens');
+  const [sendDestTab, setSendDestTab] = useState<'default' | 'external'>('default');
+  const [toAddress, setToAddress] = useState('');
+  const [sendAmount, setSendAmount] = useState('');
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  // On-chain USDT balance + smart wallet address (Polygon)
+  const { balance: usdtOnChainBalance, refetch: refetchUsdtBalance } = usePolygonUsdtBalance();
+  // Privy smart wallet send — gas sponsored by Alchemy Gas Manager
+  const { sendUsdt, sending } = usePolygonSend();
+
+  const handleSend = async () => {
+    const destination =
+      sendDestTab === 'default'
+        ? (import.meta.env.VITE_DEFAULT_WITHDRAWAL_ADDRESS as string | undefined) ?? ''
+        : toAddress;
+
+    if (!destination) {
+      toast({ title: 'No destination', description: 'Enter a recipient address.', variant: 'destructive' });
+      return;
+    }
+    if (!sendAmount || parseFloat(sendAmount) <= 0) {
+      toast({ title: 'Invalid amount', description: 'Enter an amount greater than 0.', variant: 'destructive' });
+      return;
+    }
+
+    try {
+      const hash = await sendUsdt(destination, sendAmount);
+      setSendAmount('');
+      setToAddress('');
+      refetchUsdtBalance();
+      toast({
+        title: 'USDT Sent',
+        description: `Tx: ${hash.slice(0, 10)}…${hash.slice(-6)}`,
+      });
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Transaction failed';
+      toast({ title: 'Send failed', description: msg, variant: 'destructive' });
+    }
+  };
   const { data: coinGeckoData } = useCoinGeckoData(['USDT', 'BTC', 'ETH', 'BNB', 'SOL', 'ADA', 'MATIC']);
 
   // Check for 2FA requirement on wallet page load
@@ -95,10 +135,15 @@ export const Wallet = () => {
     MATIC: { balance: 125.0, usdValue: 112.50, change24h: -2.15 },
   };
 
-  // Calculate total balance - show only USDT if other tokens are hidden
-  const totalBalance = showAllTokens 
-    ? Object.values(walletData).reduce((sum, token) => sum + token.usdValue, 0)
-    : walletData.USDT.usdValue;
+  // Real on-chain USDT balance (USDT = $1 peg, so balance === usdValue)
+  const realUsdtValue = parseFloat(usdtOnChainBalance) || 0;
+
+  // Calculate total balance using real USDT + mock other tokens
+  const totalBalance = showAllTokens
+    ? realUsdtValue + Object.entries(walletData)
+        .filter(([k]) => k !== 'USDT')
+        .reduce((sum, [, token]) => sum + token.usdValue, 0)
+    : realUsdtValue;
   
   // Get CoinGecko logo for a token
   const getCoinGeckoLogo = (symbol: string) => {
@@ -174,7 +219,7 @@ export const Wallet = () => {
                     {showBalances ? `$${totalBalance.toLocaleString()}` : '••••••••'}
                   </h2>
                   <p className="text-sm opacity-90">
-                    {showBalances ? (showAllTokens ? '+$125.50 (+2.1%) today' : `${walletData.USDT.balance} USDT`) : '••••••••'}
+                    {showBalances ? `${realUsdtValue.toFixed(2)} USDT` : '••••••••'}
                   </p>
                 </div>
                 
@@ -264,14 +309,14 @@ export const Wallet = () => {
                           <div>
                             <h4 className="font-bold text-lg">Tether</h4>
                             <p className="text-sm text-muted-foreground">
-                              {showBalances ? `${usdtData.balance} USDT` : '••••••••'}
+                              {showBalances ? `${realUsdtValue.toFixed(2)} USDT` : '••••••••'}
                             </p>
                           </div>
                         </div>
 
                         <div className="text-right">
                           <p className="font-bold text-lg">
-                            {showBalances ? `$${usdtData.usdValue.toLocaleString()}` : '••••••••'}
+                            {showBalances ? `$${realUsdtValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '••••••••'}
                           </p>
                           <div className="flex items-center justify-end text-sm text-green-500">
                             +{usdtData.change24h.toFixed(2)}%
@@ -503,7 +548,7 @@ export const Wallet = () => {
                     {/* Withdrawal Destination Selection */}
                     <div className="space-y-2">
                       <Label className="text-base font-bold">Send To</Label>
-                      <Tabs defaultValue="default" className="w-full">
+                      <Tabs value={sendDestTab} onValueChange={(v) => setSendDestTab(v as 'default' | 'external')} className="w-full">
                         <TabsList className="grid w-full grid-cols-2">
                           <TabsTrigger value="default">Default Wallet</TabsTrigger>
                           <TabsTrigger value="external">External Address</TabsTrigger>
@@ -538,9 +583,11 @@ export const Wallet = () => {
                             <div className="space-y-2">
                               <Label className="text-base font-bold">External Wallet Address</Label>
                               <div className="flex gap-2">
-                                <Input 
-                                  placeholder="Enter external wallet address"
+                                <Input
+                                  placeholder="Enter 0x… Polygon address"
                                   className="flex-1 font-mono text-base"
+                                  value={toAddress}
+                                  onChange={(e) => setToAddress(e.target.value.trim())}
                                 />
                                 <Button variant="outline" size="icon">
                                   <Scan className="w-4 h-4" />
@@ -571,14 +618,29 @@ export const Wallet = () => {
                       <div className="space-y-2">
                         <Label className="text-base font-bold">Amount</Label>
                         <div className="space-y-2">
-                          <Input 
-                            type="number" 
+                          <Input
+                            type="number"
                             placeholder="0.00"
                             className="text-xl font-bold"
+                            value={sendAmount}
+                            onChange={(e) => setSendAmount(e.target.value)}
+                            min="0"
                           />
                           <div className="flex justify-between text-base text-muted-foreground">
-                            <span>Available: {walletData[selectedToken as keyof typeof walletData]?.balance || 0} {selectedToken}</span>
-                            <Button variant="ghost" size="sm" className="h-auto p-0 text-primary">
+                            <span>
+                              Available:{' '}
+                              {selectedToken === 'USDT'
+                                ? `${parseFloat(usdtOnChainBalance).toFixed(2)} USDT`
+                                : `${walletData[selectedToken as keyof typeof walletData]?.balance || 0} ${selectedToken}`}
+                            </span>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-auto p-0 text-primary"
+                              onClick={() => {
+                                if (selectedToken === 'USDT') setSendAmount(usdtOnChainBalance);
+                              }}
+                            >
                               Max
                             </Button>
                           </div>
@@ -588,13 +650,24 @@ export const Wallet = () => {
                       <div className="space-y-2">
                         <Label className="text-base font-bold">Network Fee</Label>
                         <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                          <span className="text-base font-bold">Standard</span>
-                          <span className="text-base font-bold">~$2.50</span>
+                          <span className="text-base font-bold">Sponsored</span>
+                          <span className="text-base font-bold text-green-500">Free (Alchemy Gas Manager)</span>
                         </div>
                       </div>
 
-                      <Button className="w-full bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 py-3 text-base font-bold">
-                        Continue
+                      <Button
+                        className="w-full bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 py-3 text-base font-bold"
+                        onClick={handleSend}
+                        disabled={sending || !sendAmount}
+                      >
+                        {sending ? (
+                          <span className="flex items-center gap-2">
+                            <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                            Sending…
+                          </span>
+                        ) : (
+                          'Send USDT'
+                        )}
                       </Button>
                     </div>
                   </CardContent>
