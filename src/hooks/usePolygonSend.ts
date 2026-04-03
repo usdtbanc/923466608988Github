@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { encodeFunctionData, getAddress, isAddress, parseUnits } from 'viem';
 import { useSmartWallets } from '@privy-io/react-auth/smart-wallets';
+import { useWallets } from '@privy-io/react-auth';
 import { USDT_POLYGON_ADDRESS } from './usePolygonUsdtBalance';
 
 const TRANSFER_ABI = [
@@ -26,7 +27,9 @@ const TRANSFER_ABI = [
  */
 export function usePolygonSend() {
   const { client } = useSmartWallets();
+  const { wallets } = useWallets();
   const [sending, setSending] = useState(false);
+
   const [txHash, setTxHash] = useState<`0x${string}` | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -52,10 +55,11 @@ export function usePolygonSend() {
       // so the smart account needs zero MATIC.
       // Privy's smart account client has chain + account baked in from
       // the Privy dashboard config — no need to pass them explicitly.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const hash = await client.sendTransaction({
         to: USDT_POLYGON_ADDRESS,
         data,
-      });
+      } as any);
 
       setTxHash(hash);
       return hash;
@@ -73,7 +77,12 @@ export function usePolygonSend() {
     sending,
     txHash,
     error,
-    // The smart account address — fund this address with USDT on Polygon
-    smartAddress: client?.account?.address as `0x${string}` | undefined,
+    // Smart account address if available; fall back through multiple embedded-wallet selectors
+    smartAddress: (
+      client?.account?.address ??
+      wallets.find(w => w.walletClientType === 'privy')?.address ??
+      wallets.find(w => w.connectorType === 'embedded')?.address ??
+      wallets[0]?.address
+    ) as `0x${string}` | undefined,
   };
 }

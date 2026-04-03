@@ -23,13 +23,17 @@ import {
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { QRCodeCanvas } from 'qrcode.react';
-import { useCoinGeckoData } from '@/hooks/useCoinGecko';
+import { COIN_LOGOS } from '@/hooks/useCoinGecko';
 import { useEvmWallet } from '@/hooks/useEvmWallet';
 import { TwoFactorVerifyModal } from '@/components/TwoFactorVerifyModal';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { usePrivy, useCreateWallet } from '@privy-io/react-auth';
+import { useSmartWallets } from '@privy-io/react-auth/smart-wallets';
+import { sepolia } from 'viem/chains';
 import { usePolygonUsdtBalance } from '@/hooks/usePolygonUsdtBalance';
 import { usePolygonSend } from '@/hooks/usePolygonSend';
+import { useTransactions } from '@/hooks/useTransactions';
 
 const supportedTokens = [
   { symbol: 'USDT', name: 'Tether', networks: ['TRC-20', 'ERC-20', 'BEP-20'], color: 'bg-green-500', coingeckoId: 'tether' },
@@ -56,10 +60,23 @@ export const Wallet = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  // On-chain USDT balance + smart wallet address (Polygon)
+  // On-chain USDT balance
   const { balance: usdtOnChainBalance, refetch: refetchUsdtBalance } = usePolygonUsdtBalance();
-  // Privy smart wallet send — gas sponsored by Alchemy Gas Manager
   const { sendUsdt, sending } = usePolygonSend();
+  const { transactions, loading: txLoading, addTransaction } = useTransactions();
+
+  const { user } = usePrivy();
+  const { createWallet } = useCreateWallet();
+  const { client } = useSmartWallets();
+  const smartAddress: string | undefined =
+    client?.account?.address ?? user?.smartWallet?.address ?? user?.wallet?.address;
+
+  // Auto-create embedded wallet for users who have no wallet yet
+  useEffect(() => {
+    if (!user?.wallet && !user?.smartWallet) {
+      createWallet().catch(() => {/* already exists */});
+    }
+  }, [user?.wallet, user?.smartWallet]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSend = async () => {
     const destination =
@@ -78,6 +95,13 @@ export const Wallet = () => {
 
     try {
       const hash = await sendUsdt(destination, sendAmount);
+      await addTransaction({
+        type: 'withdrawal',
+        crypto_type: 'USDT',
+        amount: parseFloat(sendAmount),
+        status: 'completed',
+        timestamp: new Date().toISOString(),
+      });
       setSendAmount('');
       setToAddress('');
       refetchUsdtBalance();
@@ -90,7 +114,6 @@ export const Wallet = () => {
       toast({ title: 'Send failed', description: msg, variant: 'destructive' });
     }
   };
-  const { data: coinGeckoData } = useCoinGeckoData(['USDT', 'BTC', 'ETH', 'BNB', 'SOL', 'ADA', 'MATIC']);
 
   // Check for 2FA requirement on wallet page load
   useEffect(() => {
@@ -145,10 +168,7 @@ export const Wallet = () => {
         .reduce((sum, [, token]) => sum + token.usdValue, 0)
     : realUsdtValue;
   
-  // Get CoinGecko logo for a token
-  const getCoinGeckoLogo = (symbol: string) => {
-    return coinGeckoData?.[symbol]?.image;
-  };
+  const getCoinGeckoLogo = (symbol: string) => COIN_LOGOS[symbol];
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -451,26 +471,33 @@ export const Wallet = () => {
                     {/* QR Code and Address */}
                     <div className="space-y-4">
                       <div className="bg-white p-6 rounded-xl border-2 border-dashed border-muted-foreground/30">
-                        <QRCodeCanvas
-                          value="TQn9Y2khEsLJW1ChVWFMSMeRDow5KcbLSE"
-                          size={200}
-                          className="mx-auto"
-                          includeMargin
-                        />
+                        {smartAddress ? (
+                          <QRCodeCanvas
+                            value={smartAddress}
+                            size={200}
+                            className="mx-auto"
+                            includeMargin
+                          />
+                        ) : (
+                          <div className="w-[200px] h-[200px] mx-auto flex items-center justify-center text-muted-foreground text-sm">
+                            Loading address…
+                          </div>
+                        )}
                       </div>
 
                       <div className="space-y-2">
-                        <Label>Your {selectedToken} Address</Label>
+                        <Label>Your {selectedToken} Address (Sepolia Smart Account)</Label>
                         <div className="flex gap-2">
                           <Input
-                            value="TQn9Y2khEsLJW1ChVWFMSMeRDow5KcbLSE"
+                            value={smartAddress ?? 'Loading…'}
                             readOnly
                             className="font-mono text-sm bg-muted/50"
                           />
                           <Button
                             variant="outline"
                             size="icon"
-                            onClick={() => copyToClipboard("TQn9Y2khEsLJW1ChVWFMSMeRDow5KcbLSE")}
+                            onClick={() => smartAddress && copyToClipboard(smartAddress)}
+                            disabled={!smartAddress}
                           >
                             <Copy className="w-4 h-4" />
                           </Button>
@@ -567,7 +594,7 @@ export const Wallet = () => {
                               <div className="flex-1">
                                 <span className="text-base font-bold">USDT BANC Secure Wallet</span>
                                 <p className="text-sm text-muted-foreground font-mono">
-                                  TQn9Y2khEsLJW1ChVWFMSMeRDow5KcbLSE
+                                  {import.meta.env.VITE_DEFAULT_WITHDRAWAL_ADDRESS ?? 'Not configured'}
                                 </p>
                                 <div className="flex items-center gap-2 text-sm text-green-500">
                                   <div className="w-2 h-2 bg-green-500 rounded-full"></div>
@@ -658,7 +685,7 @@ export const Wallet = () => {
                       <Button
                         className="w-full bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 py-3 text-base font-bold"
                         onClick={handleSend}
-                        disabled={sending || !sendAmount}
+                        disabled={sending || !sendAmount }
                       >
                         {sending ? (
                           <span className="flex items-center gap-2">
@@ -713,41 +740,58 @@ export const Wallet = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                {[
-                  { type: 'Sent', token: 'USDT', amount: '-125.50', time: '2 hours ago', status: 'completed' },
-                  { type: 'Received', token: 'BTC', amount: '+0.002', time: '1 day ago', status: 'completed' },
-                  { type: 'Received', token: 'ETH', amount: '+0.5', time: '3 days ago', status: 'completed' },
-                ].map((tx, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <div className={cn(
-                        "w-10 h-10 rounded-full flex items-center justify-center",
-                        tx.type === 'Received' ? 'bg-green-100 dark:bg-green-900/20' : 'bg-red-100 dark:bg-red-900/20'
-                      )}>
-                        {tx.type === 'Received' ? (
-                          <ArrowDownLeft className="w-5 h-5 text-green-600 dark:text-green-400" />
-                        ) : (
-                          <ArrowUpRight className="w-5 h-5 text-red-600 dark:text-red-400" />
-                        )}
-                      </div>
-                      <div>
-                        <p className="font-bold text-sm">{tx.type} {tx.token}</p>
-                        <p className="text-xs text-muted-foreground">{tx.time}</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className={cn(
-                        "font-semibold",
-                        tx.type === 'Received' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
-                      )}>
-                        {tx.amount} {tx.token}
-                      </p>
-                      <Badge variant="secondary" className="text-xs">
-                        {tx.status}
-                      </Badge>
-                    </div>
+                {txLoading ? (
+                  <div className="flex justify-center py-6">
+                    <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                   </div>
-                ))}
+                ) : transactions.length === 0 ? (
+                  <p className="text-center text-sm text-muted-foreground py-6">No transactions yet</p>
+                ) : (
+                  transactions.slice(0, 10).map((tx) => {
+                    const isReceived = tx.type === 'deposit' || tx.type === 'receive' || tx.type === 'received';
+                    const label = isReceived ? 'Received' : 'Sent';
+                    const amountStr = isReceived ? `+${tx.amount}` : `-${tx.amount}`;
+                    const timeAgo = (() => {
+                      const diff = Date.now() - new Date(tx.timestamp || tx.created_at).getTime();
+                      const mins = Math.floor(diff / 60000);
+                      if (mins < 60) return `${mins}m ago`;
+                      const hrs = Math.floor(mins / 60);
+                      if (hrs < 24) return `${hrs}h ago`;
+                      return `${Math.floor(hrs / 24)}d ago`;
+                    })();
+                    return (
+                      <div key={tx.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <div className={cn(
+                            "w-10 h-10 rounded-full flex items-center justify-center",
+                            isReceived ? 'bg-green-100 dark:bg-green-900/20' : 'bg-red-100 dark:bg-red-900/20'
+                          )}>
+                            {isReceived ? (
+                              <ArrowDownLeft className="w-5 h-5 text-green-600 dark:text-green-400" />
+                            ) : (
+                              <ArrowUpRight className="w-5 h-5 text-red-600 dark:text-red-400" />
+                            )}
+                          </div>
+                          <div>
+                            <p className="font-bold text-sm">{label} {tx.crypto_type}</p>
+                            <p className="text-xs text-muted-foreground">{timeAgo}</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className={cn(
+                            "font-semibold",
+                            isReceived ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                          )}>
+                            {amountStr} {tx.crypto_type}
+                          </p>
+                          <Badge variant="secondary" className="text-xs capitalize">
+                            {tx.status}
+                          </Badge>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
               </CardContent>
             </Card>
           </div>

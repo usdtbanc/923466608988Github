@@ -1,5 +1,6 @@
 import { useReadContract } from 'wagmi';
 import { formatUnits } from 'viem';
+import { usePrivy } from '@privy-io/react-auth';
 import { useSmartWallets } from '@privy-io/react-auth/smart-wallets';
 
 // ─── Testnet: USDT on Sepolia ────────────────────────────────────────────────
@@ -16,27 +17,27 @@ const BALANCE_OF_ABI = [
   },
 ] as const;
 
-/**
- * Returns the real on-chain USDT balance for the Privy Smart Account on Polygon.
- * The smart account address is different from the EOA — it's the ERC-4337 account
- * that Alchemy sponsors gas for.
- */
 export function usePolygonUsdtBalance() {
+  const { user } = usePrivy();
   const { client } = useSmartWallets();
-  const smartAddress = client?.account?.address as `0x${string}` | undefined;
+
+  // Prefer smart account address; fall back to embedded EOA
+  const address = (
+    client?.account?.address ??
+    user?.smartWallet?.address ??
+    user?.wallet?.address
+  ) as `0x${string}` | undefined;
 
   const { data, isLoading, refetch } = useReadContract({
     address: USDT_POLYGON_ADDRESS,
     abi: BALANCE_OF_ABI,
     functionName: 'balanceOf',
-    args: smartAddress ? [smartAddress] : undefined,
-    query: { enabled: !!smartAddress },
+    args: address ? [address] : undefined,
+    query: { enabled: !!address },
   });
 
   return {
-    // USDT has 6 decimals on Polygon
     balance: data !== undefined ? formatUnits(data, 6) : '0',
-    smartAddress,
     isLoading,
     refetch,
   };

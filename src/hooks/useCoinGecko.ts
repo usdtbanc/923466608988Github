@@ -1,5 +1,23 @@
 import { useQuery } from '@tanstack/react-query';
 
+// Static CDN logo URLs — no API call needed for logos
+export const COIN_LOGOS: Record<string, string> = {
+  USDT:  'https://assets.coingecko.com/coins/images/325/small/Tether.png',
+  BTC:   'https://assets.coingecko.com/coins/images/1/small/bitcoin.png',
+  ETH:   'https://assets.coingecko.com/coins/images/279/small/ethereum.png',
+  BNB:   'https://assets.coingecko.com/coins/images/825/small/bnb-icon2_2x.png',
+  SOL:   'https://assets.coingecko.com/coins/images/4128/small/solana.png',
+  ADA:   'https://assets.coingecko.com/coins/images/975/small/cardano.png',
+  MATIC: 'https://assets.coingecko.com/coins/images/4713/small/polygon.png',
+  XRP:   'https://assets.coingecko.com/coins/images/44/small/xrp-symbol-white-128.png',
+  DOGE:  'https://assets.coingecko.com/coins/images/5/small/dogecoin.png',
+  DOT:   'https://assets.coingecko.com/coins/images/12171/small/polkadot.png',
+  AVAX:  'https://assets.coingecko.com/coins/images/12559/small/Avalanche_Circle_RedWhite_Trans.png',
+  LINK:  'https://assets.coingecko.com/coins/images/877/small/chainlink-new-logo.png',
+  LTC:   'https://assets.coingecko.com/coins/images/2/small/litecoin.png',
+  TRX:   'https://assets.coingecko.com/coins/images/1094/small/tron-logo.png',
+};
+
 // CoinGecko ID mapping for supported tokens
 export const COINGECKO_ID_MAP: Record<string, string> = {
   'USDT': 'tether',
@@ -23,23 +41,6 @@ export const COINGECKO_ID_MAP: Record<string, string> = {
   'FIL': 'filecoin',
   'TRX': 'tron',
 };
-
-interface CoinData {
-  id: string;
-  symbol: string;
-  name: string;
-  image: {
-    thumb: string;
-    small: string;
-    large: string;
-  };
-  market_data: {
-    current_price: {
-      usd: number;
-    };
-    price_change_percentage_24h: number;
-  };
-}
 
 interface CoinListItem {
   id: string;
@@ -96,9 +97,9 @@ export const useCoinGeckoData = (symbols: string[]) => {
         return {};
       }
     },
-    staleTime: 60000, // 1 minute
-    gcTime: 300000, // 5 minutes
-    refetchInterval: 30000, // Refetch every 30 seconds
+    staleTime: 3600000, // 1 hour
+    gcTime: 7200000, // 2 hours
+    refetchInterval: 3600000, // Refetch every 1 hour
     retry: 2,
   });
 };

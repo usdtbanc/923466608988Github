@@ -1,5 +1,9 @@
+import { Buffer } from 'buffer';
+(globalThis as typeof globalThis & { Buffer: typeof Buffer }).Buffer = Buffer;
+
 import { createRoot } from 'react-dom/client'
 import { PrivyProvider } from '@privy-io/react-auth'
+import { SmartWalletsProvider } from '@privy-io/react-auth/smart-wallets'
 import { WagmiProvider } from '@privy-io/wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { sepolia } from 'viem/chains'
@@ -38,7 +42,9 @@ createRoot(document.getElementById("root")!).render(
     {/* QueryClientProvider must wrap WagmiProvider — wagmi v2 requires it */}
     <QueryClientProvider client={queryClient}>
       <WagmiProvider config={wagmiConfig}>
-        <App />
+        <SmartWalletsProvider>
+          <App />
+        </SmartWalletsProvider>
       </WagmiProvider>
     </QueryClientProvider>
   </PrivyProvider>

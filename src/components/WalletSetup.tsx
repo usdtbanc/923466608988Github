@@ -4,7 +4,7 @@ import { Shield, ArrowRight } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useLoginWithEmail } from '@privy-io/react-auth';
+import { useLoginWithEmail, useCreateWallet } from '@privy-io/react-auth';
 import { useToast } from '@/hooks/use-toast';
 
 interface WalletSetupProps {
@@ -24,6 +24,7 @@ export const WalletSetup = ({ email }: WalletSetupProps) => {
   const [codeSent, setCodeSent] = useState(false);
 
   const { sendCode, loginWithCode } = useLoginWithEmail();
+  const { createWallet } = useCreateWallet();
 
   useEffect(() => {
     // Auto-send OTP as soon as this screen mounts
@@ -40,7 +41,9 @@ export const WalletSetup = ({ email }: WalletSetupProps) => {
     setLoading(true);
     try {
       await loginWithCode({ code });
-      // privyAuthenticated in AppRoutes will flip to true → app renders automatically
+      // Explicitly create the embedded wallet — createOnLogin in config is not
+      // guaranteed to fire for email-OTP logins in Privy v3.
+      try { await createWallet(); } catch { /* already exists — ignore */ }
     } catch {
       toast({ title: 'Invalid code', description: 'Check the code and try again.', variant: 'destructive' });
     } finally {
