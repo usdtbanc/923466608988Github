@@ -3,9 +3,9 @@ import { formatUnits } from 'viem';
 import { usePrivy } from '@privy-io/react-auth';
 import { useSmartWallets } from '@privy-io/react-auth/smart-wallets';
 
-// ─── Testnet: USDT on Sepolia ────────────────────────────────────────────────
-// Mainnet switch: replace with 0xc2132D05D31c914a87C6611C10748AEb04B58e8F (Polygon USDT)
-export const USDT_POLYGON_ADDRESS = '0x6fEA2f1b82aFC40030520a6C49B0d3b652A65915' as const;
+export const USDT_POLYGON_ADDRESS = (
+  import.meta.env.VITE_USDT_CONTRACT_ADDRESS ?? '0x6fEA2f1b82aFC40030520a6C49B0d3b652A65915'
+) as `0x${string}`;
 
 const BALANCE_OF_ABI = [
   {
