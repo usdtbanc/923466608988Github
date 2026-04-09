@@ -1,37 +1,41 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-/**
- * Supabase Edge Function: POST /functions/v1/paybis-request
- *
- * Calls the Paybis /v2/request API server-side (keeps API key secret)
- * and returns the requestId to the frontend.
- *
- * Body: { partnerUserId: string, email: string, cryptoAddress?: string, locale?: string }
- */
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: CORS });
   }
 
   try {
-    const { partnerUserId, email, cryptoAddress, locale = 'en' } = await req.json();
+    const { partnerUserId, email, cryptoAddress, currencyCode, locale = 'en' } = await req.json();
 
-    const apiKey  = Deno.env.get('PAYBIS_API_KEY');
-    const sandbox = Deno.env.get('PAYBIS_SANDBOX') === 'true';
-    const baseUrl = sandbox
-      ? 'https://widget-api.sandbox.paybis.com'
-      : 'https://widget-api.paybis.com';
+    // Read API key + sandbox flag from paybis_settings table
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+    );
 
-    if (!apiKey) {
-      return new Response(JSON.stringify({ error: 'PAYBIS_API_KEY not set' }), {
+    const { data: settings, error: settingsError } = await supabase
+      .from('paybis_settings')
+      .select('paybis_api_key, paybis_sandbox')
+      .single();
+
+    if (settingsError || !settings?.paybis_api_key) {
+      return new Response(JSON.stringify({ error: 'Paybis settings not configured' }), {
         status: 500, headers: { ...CORS, 'Content-Type': 'application/json' },
       });
     }
+
+    const apiKey  = settings.paybis_api_key as string;
+    const sandbox = settings.paybis_sandbox as boolean;
+    const baseUrl = sandbox
+      ? 'https://widget-api.sandbox.paybis.com'
+      : 'https://widget-api.paybis.com';
 
     const body: Record<string, unknown> = {
       partnerUserId,
@@ -39,7 +43,9 @@ serve(async (req) => {
       email,
       locale,
     };
-    if (cryptoAddress) body.cryptoWalletAddress = cryptoAddress;
+    if (cryptoAddress && currencyCode) {
+      body.cryptoWalletAddress = { address: cryptoAddress, currencyCode };
+    }
 
     const res = await fetch(`${baseUrl}/v2/request`, {
       method: 'POST',

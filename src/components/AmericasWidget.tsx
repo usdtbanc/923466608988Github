@@ -1,13 +1,16 @@
 import { Globe } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import PaybisWidget from "@/components/PaybisWidget";
+import { useSmartWallets } from "@privy-io/react-auth/smart-wallets";
 import { useWallets } from "@privy-io/react-auth";
 
 export default function AmericasWidget() {
+  const { client } = useSmartWallets();
   const { wallets } = useWallets();
-  // Privy embedded wallet — same EVM address works on Polygon
-  const privyWallet = wallets.find((w) => w.walletClientType === 'privy');
-  const address = privyWallet?.address;
+  // Prefer Smart Account address — this is the wallet used to send USDT gaslessly
+  const address: string | undefined =
+    client?.account?.address ??
+    wallets.find((w) => w.walletClientType === 'privy')?.address;
 
   return (
     <div className="w-full h-full flex flex-col relative bg-background">
@@ -24,7 +27,7 @@ export default function AmericasWidget() {
               🇺🇸 Americas Trading Platform
             </h2>
             <p className="text-xs sm:text-sm text-muted-foreground">
-              Buy USDT on Polygon • USD
+              Buy ETH on Sepolia • USD
               {address && (
                 <span className="ml-2 font-mono text-xs text-green-600 dark:text-green-400">
                   → {address.slice(0, 6)}…{address.slice(-4)}

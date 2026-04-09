@@ -29,7 +29,7 @@ createRoot(document.getElementById("root")!).render(
     config={{
       loginMethods: ['email', 'wallet'],
       appearance: {
-        theme: 'dark',
+        theme: 'light',
         accentColor: '#3b82f6',
       },
       defaultChain: sepolia,
