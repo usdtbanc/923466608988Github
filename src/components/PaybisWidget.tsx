@@ -35,7 +35,7 @@ export default function PaybisWidget({ fromCurrency = 'USD', toAddress }: Paybis
   const params = new URLSearchParams({
     partnerId:        PARTNER_ID,
     currencyCodeFrom: fromCurrency,
-    currencyCodeTo:   'ETH-SEPOLIA',
+    currencyCodeTo:   'USDT-TRC20-SHASTA',
     flow:             'buyCrypto',
     layout:           'embed',
   });

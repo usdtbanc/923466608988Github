@@ -68,6 +68,7 @@ export const Wallet = () => {
   const { user } = usePrivy();
   const { createWallet } = useCreateWallet();
   const { client } = useSmartWallets();
+  console.log(client, user, 'clientclient')
   const smartAddress: string | undefined =
     client?.account?.address ?? user?.smartWallet?.address ?? user?.wallet?.address;
 

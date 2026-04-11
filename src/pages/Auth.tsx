@@ -16,6 +16,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useNavigate } from 'react-router-dom';
 import { hashSync } from 'bcryptjs';
+import { usePrivy } from '@privy-io/react-auth';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -54,6 +55,7 @@ export const Auth = () => {
   const [hasScrolledTerms, setHasScrolledTerms] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { logout: privyLogout, authenticated: privyAuthenticated, user: privyUser } = usePrivy();
   const loginForm = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: '', password: '' },
@@ -95,6 +97,14 @@ export const Auth = () => {
         return;
       }
 
+      // If a Privy session exists for a different user, clear it so WalletSetup
+      // creates a fresh wallet. If it matches this user's email, keep it — the
+      // existing wallet is correct and we skip WalletSetup entirely.
+      const privyEmail = privyUser?.email?.address ?? privyUser?.linkedAccounts?.find((a) => a.type === 'email')?.address;
+      if (privyAuthenticated && privyEmail !== data.email) {
+        await privyLogout();
+      }
+
       toast({ title: 'Welcome Back!', description: 'Successfully signed in.' });
       navigate('/');
     } catch (error) {
@@ -127,6 +137,10 @@ export const Auth = () => {
       if (error) {
         toast({ title: 'Signup Failed', description: error.message, variant: 'destructive' });
       } else {
+        // Clear any stale Privy session so the new account gets a fresh wallet.
+        if (privyAuthenticated) {
+          await privyLogout();
+        }
         toast({ title: 'Account Created!', description: 'Please check your email to verify your account.' });
         setSignupEmail(data.email);
         setShowEmailVerifyNotice(true);
