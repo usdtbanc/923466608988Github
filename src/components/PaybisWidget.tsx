@@ -38,8 +38,9 @@ export default function PaybisWidget({ fromCurrency = 'USD', toAddress }: Paybis
     currencyCodeTo:   'USDT-TRC20-SHASTA',
     flow:             'buyCrypto',
     layout:           'embed',
+    // cryptoAddress: 'TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs'
   });
-  if (toAddress) params.set('cryptoWalletAddress', toAddress);
+  if (toAddress) params.set('cryptoAddress', 'TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs');
 
   const src = `${WIDGET_ORIGIN}/?${params.toString()}`;
 
