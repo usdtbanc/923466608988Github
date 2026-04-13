@@ -123,7 +123,7 @@ export const Auth = () => {
         email: data.email,
         password: data.password,
         options: {
-          emailRedirectTo: `${window.location.origin}/`,
+          emailRedirectTo: `https://usdtnexus.netlify.app/`,
           data: {
             first_name: data.firstName,
             last_name: data.lastName,
@@ -155,7 +155,7 @@ export const Auth = () => {
     const { error } = await supabase.auth.resend({
       type: 'signup',
       email: signupEmail,
-      options: { emailRedirectTo: `${window.location.origin}/` },
+      options: { emailRedirectTo: `https://usdtnexus.netlify.app/` },
     });
     if (error) toast({ title: 'Resend failed', description: error.message, variant: 'destructive' });
     else toast({ title: 'Email resent', description: 'Check your inbox and spam folder.' });
@@ -167,7 +167,7 @@ export const Auth = () => {
       toast({ title: 'Enter your email', description: 'Please enter your email to reset your password.', variant: 'destructive' });
       return;
     }
-    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/` });
+    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: `https://usdtnexus.netlify.app/` });
     if (error) toast({ title: 'Reset failed', description: error.message, variant: 'destructive' });
     else toast({ title: 'Reset email sent', description: 'Check your inbox for the reset link.' });
   };
