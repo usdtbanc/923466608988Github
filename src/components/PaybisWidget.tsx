@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 
 interface PaybisWidgetProps {
-  /** ISO fiat currency the user pays with — 'USD' or 'EUR' */
+  /** ISO fiat currency the user pay with — 'USD' or 'EUR' */
   fromCurrency?: string;
   /** Privy embedded wallet address — pre-fills the receiving address in Paybis */
   toAddress?: string;
