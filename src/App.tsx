@@ -1,13 +1,15 @@
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { LoadingScreen } from "@/components/ui/loading-screen";
 import { Layout } from "./components/Layout";
 import { useAuth } from "./hooks/useAuth";
 import { usePrivy } from "@privy-io/react-auth";
 import { WalletSetup } from "./components/WalletSetup";
+import { PublicPageShell } from "./components/PublicPageShell";
 import { Auth } from "./pages/Auth";
+import { Landing } from "./pages/Landing";
 import { Home } from "./pages/Home";
 import { Market } from "./pages/Market";
 import { Wallet } from "./pages/Wallet";
@@ -38,7 +40,15 @@ const AppRoutes = () => {
   }
 
   if (!isAuthenticated) {
-    return <Auth />;
+    return (
+      <Routes>
+        <Route path="/" element={<Landing />} />
+        <Route path="/auth" element={<Auth />} />
+        <Route path="/terms" element={<PublicPageShell><Terms /></PublicPageShell>} />
+        <Route path="/privacy" element={<PublicPageShell><Privacy /></PublicPageShell>} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    );
   }
 
   // Supabase auth done but Privy wallet not yet created — show one-time OTP gate

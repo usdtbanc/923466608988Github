@@ -14,7 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Checkbox } from '@/components/ui/checkbox';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { hashSync } from 'bcryptjs';
 import { usePrivy } from '@privy-io/react-auth';
 
@@ -47,7 +47,9 @@ type LoginFormData = z.infer<typeof loginSchema>;
 type SignupFormData = z.infer<typeof signupSchema>;
 
 export const Auth = () => {
-  const [activeTab, setActiveTab] = useState<'login' | 'signup'>('login');
+  const [searchParams] = useSearchParams();
+  const initialTab = searchParams.get('tab') === 'signup' ? 'signup' : 'login';
+  const [activeTab, setActiveTab] = useState<'login' | 'signup'>(initialTab);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showEmailVerifyNotice, setShowEmailVerifyNotice] = useState(false);
@@ -175,6 +177,11 @@ export const Auth = () => {
   return (
     <div className="min-h-screen flex items-center justify-center p-3 sm:p-4 cyber-grid">
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5" />
+      {/* Back to landing */}
+      <Link to="/" className="absolute top-4 left-4 z-20 flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors">
+        <ArrowRight className="h-3.5 w-3.5 rotate-180" />
+        Back to home
+      </Link>
       <motion.div
         initial={{ opacity: 0, y: 20, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
