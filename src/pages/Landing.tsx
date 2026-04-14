@@ -1,9 +1,10 @@
-import { motion } from 'framer-motion';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import {
   Shield, Zap, Globe, Lock, TrendingUp, Wallet, ArrowRight,
   CheckCircle, ChevronRight, Coins, FileText, ExternalLink,
-  Building2, MessageCircle
+  Building2, MessageCircle, Menu, X
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -37,7 +38,7 @@ const DashboardMockup = () => (
         </div>
 
         {/* Hero text */}
-        <h2 className="text-sm sm:text-base font-black bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent leading-tight mb-1">
+        <h2 className="text-sm sm:text-base font-black bg-gradient-to-r from-blue-500 to-blue-400 bg-clip-text text-transparent leading-tight mb-1">
           Welcome to USDT BANC
         </h2>
         <p className="text-[10px] sm:text-xs text-muted-foreground mb-3 leading-tight">
@@ -92,6 +93,8 @@ function Home(props: React.SVGProps<SVGSVGElement>) {
 
 /* ─── Landing Page ────────────────────────────────────────────────────────── */
 export const Landing = () => {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* ── Navbar ─────────────────────────────────────────────────────────── */}
@@ -102,31 +105,57 @@ export const Landing = () => {
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-lg group-hover:shadow-primary/30 transition-shadow">
               <span className="text-primary-foreground font-black text-base">U</span>
             </div>
-            <span className="text-xl font-black bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent hidden sm:block">
+            <span className="text-xl font-black bg-gradient-to-r from-blue-500 to-blue-400 bg-clip-text text-transparent hidden sm:block">
               USDT BANC
             </span>
           </Link>
 
-          {/* Nav links (desktop) */}
-          <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-muted-foreground">
+          {/* Nav links (desktop) — right-aligned */}
+          <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-muted-foreground ml-auto">
             <a href="#services" className="hover:text-foreground transition-colors">Services</a>
             <a href="#how-it-works" className="hover:text-foreground transition-colors">How It Works</a>
-            <a href="#security" className="hover:text-foreground transition-colors">Security</a>
             <a href="#about" className="hover:text-foreground transition-colors">About</a>
           </nav>
 
-          {/* CTA buttons */}
-          <div className="flex items-center gap-2 sm:gap-3">
-            <Button variant="outline" size="sm" asChild className="border-primary/30 hover:border-primary text-sm">
-              <Link to="/auth?tab=login">Sign In</Link>
-            </Button>
-            <Button size="sm" asChild className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 glow-effect text-sm font-semibold">
-              <Link to="/auth?tab=signup">
-                Get Started <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
-              </Link>
-            </Button>
-          </div>
+          {/* Mobile hamburger */}
+          <button
+            className="md:hidden ml-auto p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors"
+            onClick={() => setMobileMenuOpen(prev => !prev)}
+            aria-label="Toggle menu"
+          >
+            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
         </div>
+
+        {/* Mobile dropdown */}
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <motion.nav
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="md:hidden overflow-hidden border-t border-border/40 bg-background/95 backdrop-blur-xl"
+            >
+              <div className="flex flex-col px-4 py-3 gap-1 text-sm font-medium text-muted-foreground">
+                {(['services', 'how-it-works', 'about'] as const).map((id) => (
+                  <button
+                    key={id}
+                    className="py-2.5 text-left hover:text-foreground transition-colors"
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      setTimeout(() => {
+                        document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+                      }, 150);
+                    }}
+                  >
+                    {id === 'services' ? 'Services' : id === 'how-it-works' ? 'How It Works' : 'About'}
+                  </button>
+                ))}
+              </div>
+            </motion.nav>
+          )}
+        </AnimatePresence>
       </header>
 
       {/* ── Hero ─────────────────────────────────────────────────────────────── */}
@@ -148,7 +177,7 @@ export const Landing = () => {
 
               <h1 className="font-black leading-tight text-foreground">
                 Buy, store, and manage{' '}
-                <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent text-glow">
+                <span className="bg-gradient-to-r from-blue-500 to-blue-400 bg-clip-text text-transparent text-glow">
                   crypto in one place
                 </span>
               </h1>
@@ -158,7 +187,7 @@ export const Landing = () => {
               </p>
 
               <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
-                <Button size="lg" asChild className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 glow-effect font-bold text-base px-8">
+                <Button size="lg" asChild className="bg-gradient-to-r from-blue-500 to-blue-400  hover:from-blue-600 hover:to-blue-500 text-white glow-effect font-bold text-base px-8">
                   <Link to="/auth?tab=signup">
                     Open Free Account <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
@@ -207,7 +236,7 @@ export const Landing = () => {
               { value: '100%', label: 'Non-custodial' },
             ].map((stat) => (
               <div key={stat.label} className="text-center">
-                <div className="text-2xl sm:text-3xl font-black bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                <div className="text-2xl sm:text-3xl font-black bg-gradient-to-r from-blue-500 to-blue-400 bg-clip-text text-transparent">
                   {stat.value}
                 </div>
                 <div className="text-xs sm:text-sm text-muted-foreground mt-1">{stat.label}</div>
@@ -231,37 +260,37 @@ export const Landing = () => {
                 icon: Coins,
                 title: 'Buy Crypto',
                 desc: 'Purchase USDT, ETH, and more using USD (Americas) or EUR (Eurozone) via our integrated fiat on-ramp powered by Paybis.',
-                accent: 'from-primary to-secondary',
+                accent: 'from-blue-500 to-blue-400',
               },
               {
                 icon: Wallet,
                 title: 'Multi-chain Wallet',
                 desc: 'One dashboard for Ethereum, BSC, Polygon, Bitcoin, Solana, and XRP. Your keys, your coins — always encrypted client-side.',
-                accent: 'from-secondary to-primary',
+                accent: 'from-blue-400 to-blue-500',
               },
               {
                 icon: TrendingUp,
                 title: 'Live Market Data',
                 desc: 'Real-time prices and market caps via CoinGecko. Track your portfolio across chains at a glance.',
-                accent: 'from-primary/80 to-secondary/80',
+                accent: 'from-blue-500 to-blue-400',
               },
               {
                 icon: Lock,
                 title: 'Withdrawal Security',
                 desc: 'Every outgoing transaction is protected by a dedicated withdrawal password and TOTP two-factor authentication.',
-                accent: 'from-secondary/80 to-primary/80',
+                accent: 'from-blue-400 to-blue-500',
               },
               {
                 icon: Globe,
                 title: 'Global On-ramp',
                 desc: 'Seamless fiat-to-crypto for users in the Americas (USD) and Eurozone (EUR), with more regions coming soon.',
-                accent: 'from-primary to-primary/60',
+                accent: 'from-blue-500 to-blue-600',
               },
               {
                 icon: Shield,
                 title: 'Non-custodial by Design',
                 desc: 'Private keys and mnemonics are encrypted with AES-GCM in your browser and stored only in your device. We never see them.',
-                accent: 'from-secondary to-secondary/60',
+                accent: 'from-blue-400 to-blue-600',
               },
             ].map((item) => (
               <motion.div
@@ -335,7 +364,7 @@ export const Landing = () => {
           </div>
 
           <div className="text-center mt-10">
-            <Button size="lg" asChild className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 glow-effect font-bold">
+            <Button size="lg" asChild className="bg-gradient-to-r from-blue-500 to-blue-400  hover:from-blue-600 hover:to-blue-500 text-white glow-effect font-bold">
               <Link to="/auth?tab=signup">
                 Start for Free <ChevronRight className="ml-1.5 h-4 w-4" />
               </Link>
@@ -362,7 +391,7 @@ export const Landing = () => {
                     <span className="text-primary-foreground font-black text-2xl">U</span>
                   </div>
                   <div>
-                    <div className="text-xl font-black bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">USDT BANC</div>
+                    <div className="text-xl font-black bg-gradient-to-r from-blue-500 to-blue-400 bg-clip-text text-transparent">USDT BANC</div>
                     <div className="text-sm text-muted-foreground">Your Crypto Banking Platform</div>
                   </div>
                 </div>
@@ -473,13 +502,13 @@ export const Landing = () => {
             transition={{ duration: 0.5 }}
             className="space-y-6"
           >
-            <h2 className="font-black bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent text-glow">
+            <h2 className="font-black bg-gradient-to-r from-blue-500 to-blue-400 bg-clip-text text-transparent text-glow">
               Ready to take control of your crypto?
             </h2>
             <p className="text-muted-foreground max-w-lg mx-auto">
               Join USDT BANC today — free to open, nothing to install, and your keys stay yours.
             </p>
-            <Button size="lg" asChild className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 glow-effect font-bold text-base px-10 py-6">
+            <Button size="lg" asChild className="bg-gradient-to-r from-blue-500 to-blue-400  hover:from-blue-600 hover:to-blue-500 text-white glow-effect font-bold text-base px-10 py-6">
               <Link to="/auth?tab=signup">
                 Create Free Account <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
@@ -499,7 +528,7 @@ export const Landing = () => {
                 <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
                   <span className="text-primary-foreground font-black text-sm">U</span>
                 </div>
-                <span className="text-lg font-black bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">USDT BANC</span>
+                <span className="text-lg font-black bg-gradient-to-r from-blue-500 to-blue-400 bg-clip-text text-transparent">USDT BANC</span>
               </div>
               <p className="text-xs text-muted-foreground leading-relaxed max-w-xs">
                 Your secure, non-custodial crypto banking platform. Buy, store, and manage digital assets with confidence.
