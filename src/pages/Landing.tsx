@@ -115,6 +115,7 @@ export const Landing = () => {
             <a href="#services" className="hover:text-foreground transition-colors">Services</a>
             <a href="#how-it-works" className="hover:text-foreground transition-colors">How It Works</a>
             <a href="#about" className="hover:text-foreground transition-colors">About</a>
+            <a href="#company-overview" className="hover:text-foreground transition-colors">Company Overview</a>
           </nav>
 
           {/* Mobile hamburger */}
@@ -138,7 +139,7 @@ export const Landing = () => {
               className="md:hidden overflow-hidden border-t border-border/40 bg-background/95 backdrop-blur-xl"
             >
               <div className="flex flex-col px-4 py-3 gap-1 text-sm font-medium text-muted-foreground">
-                {(['services', 'how-it-works', 'about'] as const).map((id) => (
+                {(['services', 'how-it-works', 'about', 'company-overview'] as const).map((id) => (
                   <button
                     key={id}
                     className="py-2.5 text-left hover:text-foreground transition-colors"
@@ -149,7 +150,7 @@ export const Landing = () => {
                       }, 150);
                     }}
                   >
-                    {id === 'services' ? 'Services' : id === 'how-it-works' ? 'How It Works' : 'About'}
+                    {id === 'services' ? 'Services' : id === 'how-it-works' ? 'How It Works' : id === 'about' ? 'About' : 'Company Overview'}
                   </button>
                 ))}
               </div>
@@ -379,6 +380,7 @@ export const Landing = () => {
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
             {/* Company Overview Box */}
             <motion.div
+            id='company-overview'
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -432,7 +434,7 @@ export const Landing = () => {
                 <ul className="space-y-3 text-sm">
                   {[
                     'Private keys never leave your device',
-                    'Paybis-powered fiat on-ramp with bank-grade compliance',
+                    'Fiat on-ramp with bank-grade compliance',
                     'TOTP two-factor authentication on every withdrawal',
                     'Open architecture — no lock-in',
                   ].map((point) => (
@@ -515,11 +517,6 @@ export const Landing = () => {
             <p className="text-muted-foreground max-w-lg mx-auto">
               Join USDT BANC today — free to open, nothing to install, and your keys stay yours.
             </p>
-            <Button size="lg" asChild className="bg-gradient-to-r from-blue-500 to-blue-400  hover:from-blue-600 hover:to-blue-500 text-white glow-effect font-bold text-base px-10 py-6">
-              <Link to="/auth?tab=signup">
-                Create Free Account <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
           </motion.div>
         </div>
       </section>
@@ -588,6 +585,8 @@ export const Landing = () => {
                 {/* <li><Link to="/auth?tab=login" className="hover:text-primary transition-colors">Sign In</Link></li> */}
                 <li><a href="#services" className="hover:text-primary transition-colors">Services</a></li>
                 <li><a href="#how-it-works" className="hover:text-primary transition-colors">How It Works</a></li>
+                <li><a href="#about" className="hover:text-primary transition-colors">About</a></li>
+                <li><a href="#about" className="hover:text-primary transition-colors">Company Overview</a></li>
               </ul>
             </div>
 
