@@ -231,7 +231,7 @@ export const Landing = () => {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 mt-10">
             {[
               { value: '4+', label: 'Supported Chains' },
-              { value: '2', label: 'Fiat Regions' },
+              { value: '10', label: 'Fiat Regions' },
               { value: '256-bit', label: 'AES Encryption' },
               { value: '100%', label: 'Non-custodial' },
             ].map((stat) => (
@@ -250,7 +250,7 @@ export const Landing = () => {
       <section id="services" className="py-16 sm:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="font-black text-foreground mb-3">Everything you need in one app</h2>
+            <h2 className="font-black text-foreground mb-3">Services and Products</h2>
             <p className="text-muted-foreground max-w-xl mx-auto">From buying crypto with fiat to managing multi-chain wallets — all in a single, elegant interface.</p>
           </div>
 
@@ -259,7 +259,7 @@ export const Landing = () => {
               {
                 icon: Coins,
                 title: 'Buy Crypto',
-                desc: 'Purchase USDT, ETH, and more using USD (Americas) or EUR (Eurozone) via our integrated fiat on-ramp powered by Paybis.',
+                desc: 'Purchase USDT, ETH, and more using USD (Americas) or EUR (Eurozone) via our integrated fiat on-ramp.',
                 accent: 'from-blue-500 to-blue-400',
               },
               {
@@ -318,7 +318,7 @@ export const Landing = () => {
       <section id="how-it-works" className="py-16 sm:py-24 bg-card/50 border-y border-border">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="font-black text-foreground mb-3">Up and running in minutes</h2>
+            <h2 className="font-black text-foreground mb-3">How it works</h2>
             <p className="text-muted-foreground max-w-xl mx-auto">Three steps to your non-custodial crypto account.</p>
           </div>
 
@@ -376,28 +376,29 @@ export const Landing = () => {
       {/* ── About the Company ────────────────────────────────────────────────── */}
       <section id="about" className="py-16 sm:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-            {/* Visual side */}
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
+            {/* Company Overview Box */}
             <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5 }}
-              className="order-2 lg:order-1"
             >
-              <div className="rounded-2xl border border-primary/20 bg-card p-6 sm:p-8 neon-border space-y-6">
-                <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-lg">
-                    <span className="text-primary-foreground font-black text-2xl">U</span>
+              <div className="rounded-2xl border border-primary/20 bg-card p-6 sm:p-8 neon-border space-y-6 h-full flex flex-col justify-between">
+                <div className="space-y-6">
+                  <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-lg">
+                      <span className="text-primary-foreground font-black text-2xl">U</span>
+                    </div>
+                    <div>
+                      <div className="text-xl font-black bg-gradient-to-r from-blue-500 to-blue-400 bg-clip-text text-transparent">Company Overview</div>
+                      <div className="text-sm text-muted-foreground">Your Crypto Banking Platform</div>
+                    </div>
                   </div>
-                  <div>
-                    <div className="text-xl font-black bg-gradient-to-r from-blue-500 to-blue-400 bg-clip-text text-transparent">USDT BANC</div>
-                    <div className="text-sm text-muted-foreground">Your Crypto Banking Platform</div>
-                  </div>
+                  <p className="text-sm text-muted-foreground leading-relaxed italic">
+                    "We built USDT BANC because we believe financial freedom starts with control over your own keys. Every private key stays on your device — always."
+                  </p>
                 </div>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  "We built USDT BANC because we believe financial freedom starts with control over your own keys. Every private key stays on your device — always."
-                </p>
                 <div className="flex flex-wrap gap-2">
                   {['Non-custodial', 'Multi-chain', 'TOTP 2FA', 'AES-GCM Encryption', 'Client-side vault'].map((tag) => (
                     <span key={tag} className="px-2.5 py-1 rounded-full text-xs bg-primary/10 text-primary border border-primary/20 font-medium">
@@ -408,34 +409,40 @@ export const Landing = () => {
               </div>
             </motion.div>
 
-            {/* Text side */}
+            {/* About USDT BANC Box */}
             <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              whileInView={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.5 }}
-              className="order-1 lg:order-2 space-y-5"
+              transition={{ duration: 0.5, delay: 0.1 }}
             >
-              <h2 className="font-black text-foreground">About USDT BANC</h2>
-              <p className="text-muted-foreground leading-relaxed">
-                USDT BANC is a non-custodial crypto banking platform built for users who value privacy, security, and self-sovereignty. We provide a clean, accessible interface on top of industry-standard cryptography — so you never have to trust a third party with your assets.
-              </p>
-              <p className="text-muted-foreground leading-relaxed">
-                Our platform supports major blockchains — Ethereum, BSC, Polygon, Bitcoin, Solana, and XRP — alongside a seamless fiat on-ramp for buyers in the Americas and Eurozone. We are committed to transparency, legal compliance, and putting our users first.
-              </p>
-              <ul className="space-y-3 text-sm">
-                {[
-                  'Private keys never leave your device',
-                  'Paybis-powered fiat on-ramp with bank-grade compliance',
-                  'TOTP two-factor authentication on every withdrawal',
-                  'Open architecture — no lock-in',
-                ].map((point) => (
-                  <li key={point} className="flex items-start gap-2.5 text-muted-foreground">
-                    <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0 mt-0.5" />
-                    {point}
-                  </li>
-                ))}
-              </ul>
+              <div className="rounded-2xl border border-primary/20 bg-card p-6 sm:p-8 neon-border space-y-6 h-full flex flex-col">
+                <div>
+                  <div className="text-xl font-black text-foreground mb-1">About USDT BANC</div>
+                  <div className="h-1 w-12 bg-gradient-to-r from-primary to-secondary rounded-full"></div>
+                </div>
+                <div className="space-y-4 flex-1">
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    USDT BANC is a non-custodial crypto banking platform built for users who value privacy, security, and self-sovereignty. We provide a clean, accessible interface on top of industry-standard cryptography — so you never have to trust a third party with your assets.
+                  </p>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Our platform supports major blockchains — Ethereum, BSC, Polygon, Bitcoin, Solana, and XRP — alongside a seamless fiat on-ramp for buyers in the Americas and Eurozone. We are committed to transparency, legal compliance, and putting our users first.
+                  </p>
+                </div>
+                <ul className="space-y-3 text-sm">
+                  {[
+                    'Private keys never leave your device',
+                    'Paybis-powered fiat on-ramp with bank-grade compliance',
+                    'TOTP two-factor authentication on every withdrawal',
+                    'Open architecture — no lock-in',
+                  ].map((point) => (
+                    <li key={point} className="flex items-start gap-2.5 text-muted-foreground">
+                      <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0 mt-0.5" />
+                      {point}
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </motion.div>
           </div>
         </div>
@@ -577,8 +584,8 @@ export const Landing = () => {
             <div>
               <h4 className="text-sm font-bold text-foreground mb-3">Platform</h4>
               <ul className="space-y-2 text-xs text-muted-foreground">
-                <li><Link to="/auth?tab=signup" className="hover:text-primary transition-colors">Create Account</Link></li>
-                <li><Link to="/auth?tab=login" className="hover:text-primary transition-colors">Sign In</Link></li>
+                {/* <li><Link to="/auth?tab=signup" className="hover:text-primary transition-colors">Create Account</Link></li> */}
+                {/* <li><Link to="/auth?tab=login" className="hover:text-primary transition-colors">Sign In</Link></li> */}
                 <li><a href="#services" className="hover:text-primary transition-colors">Services</a></li>
                 <li><a href="#how-it-works" className="hover:text-primary transition-colors">How It Works</a></li>
               </ul>
@@ -623,47 +630,43 @@ export const Landing = () => {
 
           {/* Company details — required by Paybis compliance */}
           <div className="border-t border-border/60 pt-6 mb-4">
-            <div className="flex flex-wrap items-center gap-2 mb-3">
-              <div className="w-5 h-5 rounded-md bg-gradient-to-br from-primary to-secondary flex items-center justify-center flex-shrink-0">
-                <Building2 className="h-3 w-3 text-primary-foreground" />
+            <div className="rounded-2xl border border-primary/20 bg-card p-6 neon-border space-y-6">
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="w-5 h-5 rounded-md bg-gradient-to-br from-primary to-secondary flex items-center justify-center flex-shrink-0">
+                  <Building2 className="h-3 w-3 text-primary-foreground" />
+                </div>
+                <span className="text-xs font-semibold text-foreground uppercase tracking-widest">Company Information</span>
               </div>
-              <span className="text-xs font-semibold text-foreground uppercase tracking-widest">Company Information</span>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {/* Legal Name */}
-              <div className="flex items-start gap-3 rounded-xl bg-gradient-to-br from-primary/5 to-secondary/5 border border-primary/10 px-4 py-3">
-                <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <FileText className="h-3.5 w-3.5 text-primary" />
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {/* Legal Name */}
+                <div className="flex items-start gap-3">
+                  <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <FileText className="h-3.5 w-3.5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium mb-0.5">Legal Name</p>
+                    <p className="text-xs font-semibold text-foreground">USDT BANC</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium mb-0.5">Legal Name</p>
-                  <p className="text-xs font-semibold text-foreground">USDT BANC</p>
+                {/* Email */}
+                <div className="flex items-start gap-3">
+                  <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Globe className="h-3.5 w-3.5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium mb-0.5">Email</p>
+                    <p className="text-xs font-semibold text-foreground">usdtbanc@gmail.com</p>
+                  </div>
                 </div>
-              </div>
-              {/* Website */}
-              <div className="flex items-start gap-3 rounded-xl bg-gradient-to-br from-primary/5 to-secondary/5 border border-primary/10 px-4 py-3">
-                <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <Globe className="h-3.5 w-3.5 text-primary" />
-                </div>
-                <div>
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium mb-0.5">Website</p>
-                  <a href="https://www.usdtbanc.com" target="_blank" rel="noopener noreferrer"
-                    className="text-xs font-semibold text-foreground hover:text-primary transition-colors flex items-center gap-1">
-                    www.usdtbanc.com <ExternalLink className="h-2.5 w-2.5" />
-                  </a>
-                </div>
-              </div>
-              {/* Contact */}
-              <div className="flex items-start gap-3 rounded-xl bg-gradient-to-br from-primary/5 to-secondary/5 border border-primary/10 px-4 py-3">
-                <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <MessageCircle className="h-3.5 w-3.5 text-primary" />
-                </div>
-                <div>
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium mb-0.5">Contact</p>
-                  <a href="https://api.whatsapp.com/send?phone=16464204646" target="_blank" rel="noopener noreferrer"
-                    className="text-xs font-semibold text-foreground hover:text-primary transition-colors flex items-center gap-1">
-                    +1 (646) 420-4646 <ExternalLink className="h-2.5 w-2.5" />
-                  </a>
+                {/* Address */}
+                <div className="flex items-start gap-3">
+                  <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <MessageCircle className="h-3.5 w-3.5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium mb-0.5">Address</p>
+                    <p className="text-xs font-semibold text-foreground">Location, Location</p>
+                  </div>
                 </div>
               </div>
             </div>

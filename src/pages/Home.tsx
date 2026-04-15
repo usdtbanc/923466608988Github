@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import EurozoneWidget from '@/components/EurozoneWidget';
@@ -7,6 +7,12 @@ import AmericasWidget from '@/components/AmericasWidget';
 export const Home = () => {
   const [isWidgetOpen, setIsWidgetOpen] = useState(false);
   const [region, setRegion] = useState<'AMERICAS' | 'EUROZONE' | null>(null);
+
+  useEffect(() => {
+    // Auto-open AMERICAS widget on first load
+    setRegion('AMERICAS');
+    setIsWidgetOpen(true);
+  }, []);
 
   const openRegionWidget = (selected: 'AMERICAS' | 'EUROZONE') => {
     setRegion(selected);
@@ -67,7 +73,7 @@ export const Home = () => {
                     {region === 'EUROZONE' ? '💶 Eurozone' : '🇺🇸 Americas'} Trading Platform
                   </h2>
                   <p className="text-sm sm:text-base lg:text-lg text-high-contrast-muted font-semibold">
-                    Buy USDT on Polygon • Powered by Paybis
+                    Buy USDT on Polygon 
                   </p>
                 </div>
                 <Button

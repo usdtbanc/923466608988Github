@@ -246,14 +246,7 @@ export const Wallet = () => {
                 
                 {/* Action Buttons */}
                 <div className="flex justify-center gap-4 mt-6">
-                  <Button 
-                    variant="secondary" 
-                    className="bg-white/20 hover:bg-white/30 text-white border-0 backdrop-blur-sm"
-                    onClick={() => setActiveTab('receive')}
-                  >
-                    <ArrowDownLeft className="w-4 h-4 mr-2" />
-                    Receive
-                  </Button>
+                 
                   <Button 
                     variant="secondary" 
                     className="bg-white/20 hover:bg-white/30 text-white border-0 backdrop-blur-sm"
@@ -262,6 +255,14 @@ export const Wallet = () => {
                     <ArrowUpRight className="w-4 h-4 mr-2" />
                     Send
                   </Button>
+              <Button
+                variant="secondary"
+                className="bg-white/20 hover:bg-white/30 text-white border-0 backdrop-blur-sm"
+                onClick={() => setActiveTab('receive')}
+              >
+                <ArrowDownLeft className="w-4 h-4 mr-2" />
+                Receive
+              </Button>
                   <Button 
                     variant="secondary" 
                     className="bg-white/20 hover:bg-white/30 text-white border-0 backdrop-blur-sm"
@@ -280,8 +281,9 @@ export const Wallet = () => {
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="grid w-full grid-cols-3 bg-muted/30">
                 <TabsTrigger value="tokens">Tokens</TabsTrigger>
+            <TabsTrigger value="send">Send</TabsTrigger>
                 <TabsTrigger value="receive">Receive</TabsTrigger>
-                <TabsTrigger value="send">Send</TabsTrigger>
+              
               </TabsList>
 
               {/* Tokens Tab - Trust Wallet Style Grid */}
@@ -705,7 +707,7 @@ export const Wallet = () => {
           </div>
 
           {/* Quick Actions - Trust Wallet Style */}
-          <div className="px-4 pb-6">
+          {/* <div className="px-4 pb-6">
             <div className="grid grid-cols-2 gap-3">
               <Card className="border-primary/20 hover:border-primary/40 transition-colors cursor-pointer">
                 <CardContent className="p-4 text-center">
@@ -727,7 +729,7 @@ export const Wallet = () => {
                 </CardContent>
               </Card>
             </div>
-          </div>
+          </div> */}
 
           {/* Recent Transactions */}
           <div className="px-4 pb-6">
