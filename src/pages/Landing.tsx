@@ -398,15 +398,18 @@ export const Landing = () => {
                     </div>
                   </div>
                   <p className="text-sm text-muted-foreground leading-relaxed italic">
-                    "We built USDT BANC because we believe financial freedom starts with control over your own keys. Every private key stays on your device — always."
+                    Motaz Inc. is a digital asset platform designed to make cryptocurrency simple, fast, and accessible. Our platform enables users to buy, store, send, and invest in crypto securely, all in one place.
+                  </p>
+                  <p className="text-sm text-muted-foreground leading-relaxed italic">
+                    We focus on delivering a seamless user experience with strong security, transparent processes, and global accessibility.
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {['Non-custodial', 'Multi-chain', 'TOTP 2FA', 'AES-GCM Encryption', 'Client-side vault'].map((tag) => (
+                  {/* {['Non-custodial', 'Multi-chain', 'TOTP 2FA', 'AES-GCM Encryption', 'Client-side vault'].map((tag) => (
                     <span key={tag} className="px-2.5 py-1 rounded-full text-xs bg-primary/10 text-primary border border-primary/20 font-medium">
                       {tag}
                     </span>
-                  ))}
+                  ))} */}
                 </div>
               </div>
             </motion.div>
@@ -425,13 +428,16 @@ export const Landing = () => {
                 </div>
                 <div className="space-y-4 flex-1">
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    USDT BANC is a non-custodial crypto banking platform built for users who value privacy, security, and self-sovereignty. We provide a clean, accessible interface on top of industry-standard cryptography — so you never have to trust a third party with your assets.
+                    Motaz Inc. is a technology-driven company focused on simplifying access to digital assets worldwide. Our mission is to bridge the gap between traditional finance and the crypto economy by providing a user-friendly and secure platform.
                   </p>
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    Our platform supports major blockchains — Ethereum, BSC, Polygon, Bitcoin, Solana, and XRP — alongside a seamless fiat on-ramp for buyers in the Americas and Eurozone. We are committed to transparency, legal compliance, and putting our users first.
+                    We believe that cryptocurrency should be accessible to everyone, regardless of technical experience. That’s why we built a platform that allows users to easily buy, store, send, and invest in digital assets with confidence.
+                  </p>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Our goal is to create a reliable ecosystem where users can manage their crypto assets efficiently while benefiting from innovative financial solutions. We are committed to transparency, compliance, and continuous improvement as we expand our services globally.
                   </p>
                 </div>
-                <ul className="space-y-3 text-sm">
+                {/* <ul className="space-y-3 text-sm">
                   {[
                     'Private keys never leave your device',
                     'Fiat on-ramp with bank-grade compliance',
@@ -443,7 +449,7 @@ export const Landing = () => {
                       {point}
                     </li>
                   ))}
-                </ul>
+                </ul> */}
               </div>
             </motion.div>
           </div>
