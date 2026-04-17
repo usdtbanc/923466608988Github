@@ -1,190 +1,229 @@
 # USDTBANC - Non-Custodial Crypto Banking Platform
 
-A secure, non-custodial crypto banking web application that allows users to manage multi-chain wallets with client-side encryption. All private keys and mnemonics are encrypted and stored locally—never sent to the server.
+Internal development repository for the USDTBANC crypto banking application.
 
-## Features
+## Project Overview
 
-🔐 **Non-Custodial Design**
+A secure, non-custodial crypto banking web application enabling multi-chain wallet management with client-side encryption. Private keys and mnemonics are encrypted and stored locally—never transmitted to servers.
+
+**Client**: USDTBANC  
+**Status**: Active Development  
+**Repository Access**: Private (Team Only)
+
+## Key Features
+
+🔐 **Non-Custodial Architecture**
 - Private keys/mnemonics encrypted client-side with AES-GCM
 - PBKDF2 key derivation with 150k iterations
-- Stored securely in browser localStorage
+- Stored securely in browser localStorage only
 
-🌍 **Multi-Chain Support**
+🌍 **Multi-Chain Wallet Support**
 - **EVM chains**: Ethereum, Binance Smart Chain (BSC), Polygon
 - **Solana**: Full Solana wallet integration
 - **XRP Ledger**: Native XRP wallet support
 - **Bitcoin**: BTC wallet with BIP32/BIP39 support
 
-💳 **Fiat On-Ramp**
-- Paybis widget integration for USD (Americas) and EUR (Eurozone)
+💳 **Fiat On-Ramp Integration**
+- Paybis widget for USD (Americas) and EUR (Eurozone)
 - Buy crypto directly with fiat currency
-- Real-time exchange rates via CoinGecko API
+- Real-time exchange rate integration
 
-🔐 **Two-Factor Authentication (2FA)**
-- TOTP-based authentication
-- Required for all send operations
-- Secure transaction verification
+🔐 **Security**
+- Two-Factor Authentication (TOTP) for all transactions
+- Client-side transaction signing
+- Encrypted vault for key storage
 
-📊 **Live Market Data**
-- Real-time market prices and trends
-- Portfolio tracking across all chains
+📊 **Portfolio Management**
+- Real-time market prices via CoinGecko API
+- Multi-chain balance tracking
 - Transaction history with on-chain verification
 
-## Tech Stack
+## Technology Stack
 
 | Layer | Technology |
 |---|---|
 | **Frontend** | React 18 + Vite + TypeScript 5 |
 | **Routing** | react-router-dom v6 |
-| **State Management** | TanStack React Query + Custom Hooks |
-| **Backend/Database** | Supabase (Postgres + Auth + Realtime + Edge Functions) |
-| **Embedded Wallets** | Privy (@privy-io/react-auth) |
-| **Styling** | Tailwind CSS v3 + shadcn/ui |
-| **UI Components** | Radix UI + Framer Motion animations |
+| **State** | TanStack React Query + Custom Hooks |
+| **Backend** | Supabase (Postgres + Auth + Realtime + Edge Functions) |
+| **Wallets** | Privy (Embedded Wallets) |
+| **Styling** | Tailwind CSS v3 + shadcn/ui (Radix UI) |
 | **Forms** | react-hook-form + Zod validation |
-| **Crypto** | ethers, @solana/web3.js, xrpl, bitcoinjs-lib |
+| **Crypto** | ethers, @solana/web3.js, xrpl, bitcoinjs-lib, bip32/bip39 |
 | **Notifications** | Sonner toast notifications |
+| **PDF Export** | jspdf |
 
-## Quick Start
+See [CLAUDE.md](./CLAUDE.md) for detailed project architecture and development guidelines.
+
+## Getting Started
 
 ### Prerequisites
-- Node.js 16+ (install via [nvm](https://github.com/nvm-sh/nvm#installing-and-updating))
-- npm or yarn package manager
+- Node.js 16+
+- npm or yarn
 
-### Installation
+### Local Setup
 
 ```bash
-# Clone the repository
-git clone https://github.com/m-Jawa-d/usdtbanc.git
-
-# Navigate to project directory
-cd usdtbanc
-
 # Install dependencies
 npm install
+
+# Create .env.local with required variables (see Environment Variables section)
 
 # Start development server
 npm run dev
 ```
 
-The app will be available at `http://localhost:8080`
+Development server runs on `http://localhost:8080`
 
 ## Environment Variables
 
-Create a `.env.local` file in the project root:
+Required for local development (`.env.local`):
 
 ```env
-# Privy (Embedded Wallets)
-VITE_PRIVY_APP_ID=your_privy_app_id
+# Privy Embedded Wallets
+VITE_PRIVY_APP_ID=<from_privy_dashboard>
 
-# Paybis (Fiat On-Ramp)
-VITE_PAYBIS_PARTNER_ID=your_paybis_partner_id
-VITE_PAYBIS_SANDBOX=true|false
+# Paybis Fiat On-Ramp
+VITE_PAYBIS_PARTNER_ID=<from_paybis_account>
+VITE_PAYBIS_SANDBOX=true
 
-# Supabase (Backend)
-VITE_SUPABASE_URL=your_supabase_url
-VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+# Supabase
+VITE_SUPABASE_URL=<from_supabase_project>
+VITE_SUPABASE_ANON_KEY=<from_supabase_project>
 ```
 
-## Available Scripts
+Edge function secret (Supabase only):
+```
+PAYBIS_API_KEY=<from_paybis_account>
+```
 
+## Build & Deployment
+
+### Development
 ```bash
-npm run dev          # Start development server
-npm run build        # Build for production
-npm run build:dev    # Build in development mode
-npm run lint         # Run ESLint
-npm run preview      # Preview production build locally
+npm run dev        # Start dev server with hot reload
+npm run lint       # Run ESLint
 ```
+
+### Production
+```bash
+npm run build      # Build for production
+npm run preview    # Preview production build locally
+```
+
+### Deployment Targets
+- **Staging**: Netlify (api-based-integration branch)
+- **Production**: TBD
 
 ## Project Structure
 
 ```
 src/
-├── components/        # Reusable UI components
-├── pages/            # Page components (Auth, Home, Market, Wallet, etc.)
-├── hooks/            # Custom React hooks (wallet, auth, data fetching)
-├── lib/              # Utility functions and crypto operations
-├── integrations/     # Supabase client and types
-├── assets/           # Static assets (images, SVGs)
-└── App.tsx           # Root component with routing
+├── components/              # Reusable components
+│   ├── Layout.tsx          # App shell & navigation
+│   ├── PaybisWidget.tsx    # Fiat on-ramp iframe
+│   ├── WalletSetup.tsx     # Privy OTP gate
+│   ├── TwoFactorVerifyModal.tsx
+│   └── ui/                 # shadcn/ui primitives
+├── pages/                  # Page routes
+├── hooks/                  # Custom React hooks
+│   ├── useAuth.ts          # Supabase auth
+│   ├── useEvmWallet.ts     # EVM wallet state
+│   ├── useBtcWallet.ts
+│   ├── useSolWallet.ts
+│   ├── useXrpWallet.ts
+│   └── useTransactions.ts  # Transaction tracking
+├── lib/
+│   ├── crypto/vault.ts     # AES-GCM encryption
+│   └── chain/              # Chain-specific adapters
+├── integrations/supabase/  # Auto-generated Supabase types
+└── assets/                 # Static files
+
+supabase/
+└── functions/
+    └── paybis-request/     # Edge function for API key handling
 ```
 
-## Key Features Explained
+## Authentication Flow
 
-### Non-Custodial Architecture
-Private keys are never transmitted to servers. They are encrypted client-side using WebCrypto API:
-- Algorithm: AES-GCM (256-bit)
-- Key Derivation: PBKDF2 (150k iterations, SHA-256)
-- Storage: Browser localStorage (encrypted vault)
+1. **Supabase Auth** - Email/password login (primary identity)
+2. **Privy OTP Gate** - One-time email OTP (WalletSetup component)
+3. **Embedded Wallet** - Auto-created after Privy OTP verification
+4. **TOTP 2FA** - Required for every transaction
 
-### Two-Layer Authentication
-1. **Supabase Auth**: Email/password authentication for primary identity
-2. **Privy Embedded Wallets**: Embedded wallet with one-time OTP verification
+See [CLAUDE.md](./CLAUDE.md#authentication--two-layer-system) for detailed auth architecture.
 
-### Real-Time Updates
-Supabase Realtime subscriptions provide:
-- Live transaction updates
-- Instant balance synchronization
-- Real-time market price feeds
+## Database Schema
 
-### Secure Transactions
-Every send operation requires:
-- TOTP 2FA verification
-- Gas fee estimation
-- Transaction confirmation
+Key tables in Supabase:
+- `profiles` - User profile data
+- `transactions` - Transaction records
+- `wallet_transactions` - On-chain transaction history
+- `exchange_rates` - Currency conversion rates
 
-## Deployment
+Realtime subscriptions used for live updates on transactions and balances.
 
-### Netlify
+## Development Guidelines
 
-```bash
-# Build the project
-npm run build
+- **No Redux/Zustand** - Use custom hooks + local state only
+- **Type Safety** - Full TypeScript coverage
+- **Component Convention** - Named exports, one per file
+- **Path Alias** - Use `@/` for imports from `src/`
+- **Error Handling** - Console errors, return null on failure
+- **Testing** - Manual testing in browser; no test suite setup yet
 
-# Deploy to Netlify
-# Connect your GitHub repo to Netlify for automatic deployments
-```
-
-**Deployment URL**: https://usdtbanc.netlify.app
-
-### Manual Deployment
-
-```bash
-# Build production bundle
-npm run build
-
-# Deploy the 'dist' folder to your hosting provider
-```
+See [CLAUDE.md](./CLAUDE.md) for complete development conventions.
 
 ## Security Considerations
 
-✅ **What's Secure**
-- Private keys encrypted with AES-GCM
-- No keys transmitted to backend
-- 2FA required for transactions
-- Client-side validation and signing
+### What We Do
+✅ Encrypt private keys with AES-GCM client-side  
+✅ Never transmit keys to backend servers  
+✅ Require 2FA for all transactions  
+✅ Client-side transaction signing  
+✅ PBKDF2 key derivation (150k iterations)
 
-⚠️ **User Responsibility**
-- Keep your mnemonic seed phrase safe
-- Never share your recovery phrase
-- Use strong passwords
-- Keep your device secure
+### What Users Must Do
+⚠️ Keep seed phrases secure and private  
+⚠️ Use strong account passwords  
+⚠️ Verify transaction details before signing  
+⚠️ Protect device/browser from malware
 
-## Contributing
+## Current Branches
 
-Contributions are welcome! Please ensure:
-- Code follows the existing style conventions
-- Changes are tested locally (`npm run dev`)
-- Commits are clear and descriptive
+- `main` - Production-ready code
+- `api-based-integration` - Active development (Paybis integration)
+- Other feature branches as needed
 
-## License
+## Troubleshooting
 
-This project is part of the USDTBANC platform.
+### Build Issues
+```bash
+# Clear cache and reinstall
+rm -rf node_modules package-lock.json
+npm install
+npm run build
+```
 
-## Support
+### Port Already in Use
+```bash
+# Change dev server port
+npm run dev -- --port 3000
+```
 
-For issues, feature requests, or questions, please open an issue on GitHub or contact support@usdtbanc.app
+### Supabase Connection Issues
+- Verify VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in .env.local
+- Check Supabase project is active and accessible
+- Verify network connectivity to Supabase servers
+
+## Notes for Development Team
+
+- All work should be branched from `main`
+- Use descriptive commit messages following the existing pattern
+- Test locally before pushing
+- Keep [CLAUDE.md](./CLAUDE.md) updated as architecture changes
+- Review security implications of any sensitive changes
 
 ---
 
-**Made with ❤️ for secure crypto banking**
+**For detailed architecture and Claude Code guidelines, see [CLAUDE.md](./CLAUDE.md)**
