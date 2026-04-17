@@ -37,7 +37,7 @@ export const Home = () => {
         </div>
 
         {/* Region Buttons */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 lg:gap-6 max-w-xl lg:max-w-2xl mx-auto px-4">
+        {/* <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 lg:gap-6 max-w-xl lg:max-w-2xl mx-auto px-4">
           <div>
             <Button
               size="lg"
@@ -59,14 +59,14 @@ export const Home = () => {
               EUROZONE
             </Button>
           </div>
-        </div>
+        </div> */}
 
         {/* Widget container */}
         {isWidgetOpen && (
           <div className="w-full max-w-none mx-auto min-h-[500px] sm:min-h-[600px] md:min-h-[700px] lg:min-h-[750px] xl:min-h-[800px]
                          rounded-xl bg-card border border-primary/20 shadow-lg overflow-hidden flex flex-col mt-6"
           >
-            <div className="p-3 sm:p-4 lg:p-6 border-b border-border/30 flex-shrink-0 bg-card">
+            {/* <div className="p-3 sm:p-4 lg:p-6 border-b border-border/30 flex-shrink-0 bg-card">
               <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
                 <div className="text-center sm:text-left">
                   <h2 className="text-xl sm:text-2xl lg:text-3xl font-black text-high-contrast text-glow">
@@ -85,7 +85,7 @@ export const Home = () => {
                   Close Widget
                 </Button>
               </div>
-            </div>
+            </div> */}
             <div className="flex-1 overflow-auto">
               {region === 'EUROZONE' ? <EurozoneWidget /> : <AmericasWidget />}
             </div>

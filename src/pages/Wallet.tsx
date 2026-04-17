@@ -232,14 +232,14 @@ export const Wallet = () => {
             </div>
 
             {/* Total Balance Card - Trust Wallet Style */}
-            <Card className="bg-gradient-to-r from-primary to-secondary text-white border-0 shadow-xl">
+            <Card className="bg-gradient-to-r from-primary/90 to-primary md:from-primary md:to-secondary text-white border-0 shadow-xl">
               <CardContent className="p-6">
                 <div className="text-center space-y-2">
-                  <p className="text-sm opacity-90">Total Balance</p>
-                  <h2 className="text-3xl font-bold">
+                  <p className="text-sm opacity-100 md:opacity-90 md:text-inherit text-white">Total Balance</p>
+                  <h2 className="text-3xl font-bold text-white md:text-inherit">
                     {showBalances ? `$${totalBalance.toLocaleString()}` : '••••••••'}
                   </h2>
-                  <p className="text-sm opacity-90">
+                  <p className="text-sm opacity-100 md:opacity-90 md:text-inherit text-white">
                     {showBalances ? `${realUsdtValue.toFixed(2)} USDT` : '••••••••'}
                   </p>
                 </div>

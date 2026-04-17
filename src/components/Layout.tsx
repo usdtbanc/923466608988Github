@@ -60,7 +60,7 @@ export const Layout = () => {
           x: isLargeScreen ? 0 : (mobileMenuOpen ? 0 : -320),
         }}
         className={cn(
-          "fixed top-0 left-0 z-40 h-screen w-72 sm:w-80 xl:w-64 bg-card border-r border-border xl:translate-x-0 xl:static overflow-y-auto flex flex-col",
+          "fixed top-0 left-0 z-40 h-screen w-72 sm:w-80 xl:w-64 bg-card border-r border-border xl:translate-x-0 xl:static overflow-y-auto flex flex-col pb-32 sm:pb-20 xl:pb-0",
           "transition-transform duration-300 ease-in-out xl:transition-none"
         )}
       >
