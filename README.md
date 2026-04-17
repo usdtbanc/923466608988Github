@@ -1,74 +1,190 @@
-# Welcome to your Lovable project
+# USDTBANC - Non-Custodial Crypto Banking Platform
 
-## Project info
+A secure, non-custodial crypto banking web application that allows users to manage multi-chain wallets with client-side encryption. All private keys and mnemonics are encrypted and stored locally—never sent to the server.
 
-**URL**: https://lovable.dev/projects/b62c892f-0515-4b26-9774-82e240946e76
+## Features
 
-## How can I edit this code?
+🔐 **Non-Custodial Design**
+- Private keys/mnemonics encrypted client-side with AES-GCM
+- PBKDF2 key derivation with 150k iterations
+- Stored securely in browser localStorage
 
-There are several ways of editing your application.
+🌍 **Multi-Chain Support**
+- **EVM chains**: Ethereum, Binance Smart Chain (BSC), Polygon
+- **Solana**: Full Solana wallet integration
+- **XRP Ledger**: Native XRP wallet support
+- **Bitcoin**: BTC wallet with BIP32/BIP39 support
 
-**Use Lovable**
+💳 **Fiat On-Ramp**
+- Paybis widget integration for USD (Americas) and EUR (Eurozone)
+- Buy crypto directly with fiat currency
+- Real-time exchange rates via CoinGecko API
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/b62c892f-0515-4b26-9774-82e240946e76) and start prompting.
+🔐 **Two-Factor Authentication (2FA)**
+- TOTP-based authentication
+- Required for all send operations
+- Secure transaction verification
 
-Changes made via Lovable will be committed automatically to this repo.
+📊 **Live Market Data**
+- Real-time market prices and trends
+- Portfolio tracking across all chains
+- Transaction history with on-chain verification
 
-**Use your preferred IDE**
+## Tech Stack
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+| Layer | Technology |
+|---|---|
+| **Frontend** | React 18 + Vite + TypeScript 5 |
+| **Routing** | react-router-dom v6 |
+| **State Management** | TanStack React Query + Custom Hooks |
+| **Backend/Database** | Supabase (Postgres + Auth + Realtime + Edge Functions) |
+| **Embedded Wallets** | Privy (@privy-io/react-auth) |
+| **Styling** | Tailwind CSS v3 + shadcn/ui |
+| **UI Components** | Radix UI + Framer Motion animations |
+| **Forms** | react-hook-form + Zod validation |
+| **Crypto** | ethers, @solana/web3.js, xrpl, bitcoinjs-lib |
+| **Notifications** | Sonner toast notifications |
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## Quick Start
 
-Follow these steps:
+### Prerequisites
+- Node.js 16+ (install via [nvm](https://github.com/nvm-sh/nvm#installing-and-updating))
+- npm or yarn package manager
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### Installation
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+```bash
+# Clone the repository
+git clone https://github.com/m-Jawa-d/usdtbanc.git
 
-# Step 3: Install the necessary dependencies.
-npm i
+# Navigate to project directory
+cd usdtbanc
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Install dependencies
+npm install
+
+# Start development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+The app will be available at `http://localhost:8080`
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Environment Variables
 
-**Use GitHub Codespaces**
+Create a `.env.local` file in the project root:
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+```env
+# Privy (Embedded Wallets)
+VITE_PRIVY_APP_ID=your_privy_app_id
 
-## What technologies are used for this project?
+# Paybis (Fiat On-Ramp)
+VITE_PAYBIS_PARTNER_ID=your_paybis_partner_id
+VITE_PAYBIS_SANDBOX=true|false
 
-This project is built with:
+# Supabase (Backend)
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## Available Scripts
 
-## How can I deploy this project?
+```bash
+npm run dev          # Start development server
+npm run build        # Build for production
+npm run build:dev    # Build in development mode
+npm run lint         # Run ESLint
+npm run preview      # Preview production build locally
+```
 
-Simply open [Lovable](https://lovable.dev/projects/b62c892f-0515-4b26-9774-82e240946e76) and click on Share -> Publish.
+## Project Structure
 
-## Can I connect a custom domain to my Lovable project?
+```
+src/
+├── components/        # Reusable UI components
+├── pages/            # Page components (Auth, Home, Market, Wallet, etc.)
+├── hooks/            # Custom React hooks (wallet, auth, data fetching)
+├── lib/              # Utility functions and crypto operations
+├── integrations/     # Supabase client and types
+├── assets/           # Static assets (images, SVGs)
+└── App.tsx           # Root component with routing
+```
 
-Yes, you can!
+## Key Features Explained
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+### Non-Custodial Architecture
+Private keys are never transmitted to servers. They are encrypted client-side using WebCrypto API:
+- Algorithm: AES-GCM (256-bit)
+- Key Derivation: PBKDF2 (150k iterations, SHA-256)
+- Storage: Browser localStorage (encrypted vault)
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
-# usdtbanc
+### Two-Layer Authentication
+1. **Supabase Auth**: Email/password authentication for primary identity
+2. **Privy Embedded Wallets**: Embedded wallet with one-time OTP verification
+
+### Real-Time Updates
+Supabase Realtime subscriptions provide:
+- Live transaction updates
+- Instant balance synchronization
+- Real-time market price feeds
+
+### Secure Transactions
+Every send operation requires:
+- TOTP 2FA verification
+- Gas fee estimation
+- Transaction confirmation
+
+## Deployment
+
+### Netlify
+
+```bash
+# Build the project
+npm run build
+
+# Deploy to Netlify
+# Connect your GitHub repo to Netlify for automatic deployments
+```
+
+**Deployment URL**: https://usdtbanc.netlify.app
+
+### Manual Deployment
+
+```bash
+# Build production bundle
+npm run build
+
+# Deploy the 'dist' folder to your hosting provider
+```
+
+## Security Considerations
+
+✅ **What's Secure**
+- Private keys encrypted with AES-GCM
+- No keys transmitted to backend
+- 2FA required for transactions
+- Client-side validation and signing
+
+⚠️ **User Responsibility**
+- Keep your mnemonic seed phrase safe
+- Never share your recovery phrase
+- Use strong passwords
+- Keep your device secure
+
+## Contributing
+
+Contributions are welcome! Please ensure:
+- Code follows the existing style conventions
+- Changes are tested locally (`npm run dev`)
+- Commits are clear and descriptive
+
+## License
+
+This project is part of the USDTBANC platform.
+
+## Support
+
+For issues, feature requests, or questions, please open an issue on GitHub or contact support@usdtbanc.app
+
+---
+
+**Made with ❤️ for secure crypto banking**
