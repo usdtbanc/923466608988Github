@@ -670,7 +670,9 @@ export const Landing = () => {
                   </div>
                   <div>
                     <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium mb-0.5">Address</p>
-                    <p className="text-xs font-semibold text-foreground">Location, Location</p>
+                    <p className="text-xs font-semibold text-foreground">5482 Wilshire Blvd 
+Suite 1915 
+Los Angeles CA 90035 </p>
                   </div>
                 </div>
               </div>
