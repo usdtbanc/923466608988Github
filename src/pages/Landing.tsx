@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import {
   Shield, Zap, Globe, Lock, TrendingUp, Wallet, ArrowRight,
   CheckCircle, ChevronRight, Coins, FileText, ExternalLink,
-  Building2, MessageCircle, Menu, X
+  Building2, MessageCircle, Menu, X, Phone, Hash
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -650,29 +650,48 @@ export const Landing = () => {
                   </div>
                   <div>
                     <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium mb-0.5">Legal Name</p>
-                    <p className="text-xs font-semibold text-foreground">USDT BANC</p>
+                    <p className="text-xs font-semibold text-foreground">3Byte Labs LLC</p>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">DBA: USDT Banc</p>
                   </div>
                 </div>
-                {/* Email */}
+                {/* Entity Registration */}
                 <div className="flex items-start gap-3">
                   <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <Globe className="h-3.5 w-3.5 text-primary" />
+                    <Hash className="h-3.5 w-3.5 text-primary" />
                   </div>
                   <div>
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium mb-0.5">Email</p>
-                    <p className="text-xs font-semibold text-foreground">usdtbanc@gmail.com</p>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium mb-0.5">Entity Registration</p>
+                    <p className="text-xs font-semibold text-foreground">202359718215</p>
                   </div>
                 </div>
                 {/* Address */}
                 <div className="flex items-start gap-3">
                   <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <MessageCircle className="h-3.5 w-3.5 text-primary" />
+                    <Building2 className="h-3.5 w-3.5 text-primary" />
                   </div>
                   <div>
                     <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium mb-0.5">Address</p>
-                    <p className="text-xs font-semibold text-foreground">5482 Wilshire Blvd 
-Suite 1915 
-Los Angeles CA 90035 </p>
+                    <p className="text-xs font-semibold text-foreground leading-relaxed">5482 Wilshire Blvd, Suite 1915<br />Los Angeles, CA 90035</p>
+                  </div>
+                </div>
+                {/* Phone */}
+                <div className="flex items-start gap-3">
+                  <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Phone className="h-3.5 w-3.5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium mb-0.5">Tel</p>
+                    <p className="text-xs font-semibold text-foreground">310-890-5604</p>
+                  </div>
+                </div>
+                {/* WhatsApp */}
+                <div className="flex items-start gap-3">
+                  <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <MessageCircle className="h-3.5 w-3.5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium mb-0.5">WhatsApp</p>
+                    <p className="text-xs font-semibold text-foreground">310-890-5604</p>
                   </div>
                 </div>
               </div>
