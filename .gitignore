@@ -26,3 +26,5 @@ dist-ssr
 *.key
 private-pkcs8.key
 private.key
+*.pem
+supabase/.temp/

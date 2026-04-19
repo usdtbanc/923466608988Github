@@ -6,8 +6,6 @@ import { useAuth } from '@/hooks/useAuth';
 interface PaybisWidgetProps {
   /** ISO fiat currency the user pays with — 'USD' or 'EUR' */
   fromCurrency?: string;
-  /** Privy embedded wallet address — pre-fills the receiving address in Paybis */
-  toAddress?: string;
 }
 
 const SANDBOX       = import.meta.env.VITE_PAYBIS_SANDBOX === 'true';
@@ -18,7 +16,7 @@ const CRYPTO_CODE   = SANDBOX ? 'USDT-TRC20-SHASTA' : 'USDT-TRC20';
 
 type Status = 'loading' | 'ready' | 'error';
 
-export default function PaybisWidget({ fromCurrency = 'USD', toAddress }: PaybisWidgetProps) {
+export default function PaybisWidget({ fromCurrency = 'USD' }: PaybisWidgetProps) {
   const { user } = useAuth();
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [requestId, setRequestId] = useState<string | null>(null);
@@ -36,10 +34,7 @@ export default function PaybisWidget({ fromCurrency = 'USD', toAddress }: Paybis
 
     supabase.functions.invoke('paybis-request', {
       body: {
-        partnerUserId:    user.id,
-        email:            user.email,
         currencyCodeFrom: fromCurrency,
-        cryptoAddress: 'TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs' , // || toAddress,
         currencyCode:     CRYPTO_CODE,
       },
     }).then(({ data, error }) => {
@@ -56,7 +51,7 @@ export default function PaybisWidget({ fromCurrency = 'USD', toAddress }: Paybis
     });
 
     return () => { cancelled = true; };
-  }, [user?.id, fromCurrency, toAddress, retryCount]);
+  }, [user?.id, fromCurrency, retryCount]);
 
   // Listen to Paybis postMessage events from the widget iframe
   useEffect(() => {

