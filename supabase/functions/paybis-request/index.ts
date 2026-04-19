@@ -5,6 +5,7 @@ const ALLOWED_ORIGINS = new Set([
   'http://localhost:8080',
   'https://usdtnexus.netlify.app',
   'https://paybis-v3.netlify.app',
+  'https://paybis-v3-integration.netlify.app',
 ]);
 
 function corsHeaders(origin: string | null) {
