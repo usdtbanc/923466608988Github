@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import {
   Shield, Zap, Globe, Lock, TrendingUp, Wallet, ArrowRight,
   CheckCircle, ChevronRight, Coins, FileText, ExternalLink,
-  Building2, MessageCircle, Menu, X, Phone, Hash
+  Building2, MessageCircle, Menu, X, Phone, Hash, AlertTriangle, RotateCcw
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -627,6 +627,16 @@ export const Landing = () => {
                 <li>
                   <Link to="/privacy" className="hover:text-primary transition-colors flex items-center gap-1">
                     <Lock className="h-3 w-3" /> Privacy Policy
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/disclaimer" className="hover:text-primary transition-colors flex items-center gap-1">
+                    <AlertTriangle className="h-3 w-3" /> Disclaimer
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/refund-policy" className="hover:text-primary transition-colors flex items-center gap-1">
+                    <RotateCcw className="h-3 w-3" /> Refund Policy & Transaction Finality
                   </Link>
                 </li>
               </ul>

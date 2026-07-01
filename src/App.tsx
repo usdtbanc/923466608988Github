@@ -17,6 +17,8 @@ import { Profile } from "./pages/Profile";
 import { About } from "./pages/About";
 import { Terms } from "./pages/Terms";
 import { Privacy } from "./pages/Privacy";
+import { Disclaimer } from "./pages/Disclaimer";
+import { RefundPolicy } from "./pages/RefundPolicy";
 import NotFound from "./pages/NotFound";
 
 const App = () => {
@@ -46,6 +48,8 @@ const AppRoutes = () => {
         <Route path="/auth" element={<Auth />} />
         <Route path="/terms" element={<PublicPageShell><Terms /></PublicPageShell>} />
         <Route path="/privacy" element={<PublicPageShell><Privacy /></PublicPageShell>} />
+        <Route path="/disclaimer" element={<PublicPageShell><Disclaimer /></PublicPageShell>} />
+        <Route path="/refund-policy" element={<PublicPageShell><RefundPolicy /></PublicPageShell>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     );
@@ -66,6 +70,8 @@ const AppRoutes = () => {
         <Route path="/about" element={<About />} />
         <Route path="/terms" element={<Terms />} />
         <Route path="/privacy" element={<Privacy />} />
+        <Route path="/disclaimer" element={<Disclaimer />} />
+        <Route path="/refund-policy" element={<RefundPolicy />} />
       </Route>
       <Route path="*" element={<NotFound />} />
     </Routes>
