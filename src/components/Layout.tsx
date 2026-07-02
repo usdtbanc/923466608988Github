@@ -95,19 +95,19 @@ export const Layout = () => {
               </Link>
             );
           })}
-        </div>
 
-        {user && (
-          <div className="p-4 sm:p-6 mt-auto">
-            <Button
-              variant="outline"
-              onClick={signOut}
-              className="w-full text-sm sm:text-base"
-            >
-              Sign Out
-            </Button>
-          </div>
-        )}
+          {user && (
+            <div className="pt-2 pb-6">
+              <Button
+                variant="outline"
+                onClick={signOut}
+                className="w-full text-sm sm:text-base"
+              >
+                Sign Out
+              </Button>
+            </div>
+          )}
+        </div>
       </motion.nav>
 
       {/* Main Content */}

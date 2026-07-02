@@ -5,8 +5,6 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { LoadingScreen } from "@/components/ui/loading-screen";
 import { Layout } from "./components/Layout";
 import { useAuth } from "./hooks/useAuth";
-import { usePrivy } from "@privy-io/react-auth";
-import { WalletSetup } from "./components/WalletSetup";
 import { PublicPageShell } from "./components/PublicPageShell";
 import { Auth } from "./pages/Auth";
 import { Landing } from "./pages/Landing";
@@ -34,10 +32,9 @@ const App = () => {
 };
 
 const AppRoutes = () => {
-  const { loading, isAuthenticated, user } = useAuth();
-  const { ready: privyReady, authenticated: privyAuthenticated } = usePrivy();
+  const { loading, isAuthenticated } = useAuth();
 
-  if (loading || !privyReady) {
+  if (loading) {
     return <LoadingScreen />;
   }
 
@@ -53,11 +50,6 @@ const AppRoutes = () => {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     );
-  }
-
-  // Supabase auth done but Privy wallet not yet created — show one-time OTP gate
-  if (!privyAuthenticated) {
-    return <WalletSetup email={user!.email!} />;
   }
 
   return (
