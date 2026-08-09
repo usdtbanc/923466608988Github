@@ -41,9 +41,9 @@ export default function EurozoneWidget() {
         </Badge>
       </div>
 
-      {/* Paybis iframe — address pre-filled from Privy wallet */}
+      {/* Paybis iframe — destination address resolved server-side from the wallets table */}
       <div className="flex-1 p-0">
-        <PaybisWidget fromCurrency="EUR" toAddress={address} />
+        <PaybisWidget fromCurrency="EUR" />
       </div>
     </div>
   );

@@ -272,7 +272,7 @@ export const Landing = () => {
                     </div>
                   </div>
                   <p className="text-sm text-muted-foreground leading-relaxed italic">
-                    Motaz Inc. is a digital asset platform designed to make cryptocurrency simple, fast, and accessible. Our platform enables users to buy, store, send, and invest in crypto securely, all in one place.
+                    USDT Banc is a digital asset platform designed to make cryptocurrency simple, fast, and accessible. Our platform enables users to buy, store, send, and invest in crypto securely, all in one place.
                   </p>
                   <p className="text-sm text-muted-foreground leading-relaxed italic">
                     We focus on delivering a seamless user experience with strong security, transparent processes, and global accessibility.
@@ -302,7 +302,7 @@ export const Landing = () => {
                 </div>
                 <div className="space-y-4 flex-1">
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    Motaz Inc. is a technology-driven company focused on simplifying access to digital assets worldwide. Our mission is to bridge the gap between traditional finance and the crypto economy by providing a user-friendly and secure platform.
+                    USDT Banc is a technology-driven company focused on simplifying access to digital assets worldwide. Our mission is to bridge the gap between traditional finance and the crypto economy by providing a user-friendly and secure platform.
                   </p>
                   <p className="text-sm text-muted-foreground leading-relaxed">
                     We believe that cryptocurrency should be accessible to everyone, regardless of technical experience. That’s why we built a platform that allows users to easily buy, store, send, and invest in digital assets with confidence.
@@ -485,7 +485,7 @@ export const Landing = () => {
                   </div>
                   <div>
                     <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium mb-0.5">Legal Name</p>
-                    <p className="text-xs font-semibold text-foreground">3Byte Labs LLC</p>
+                    <p className="text-xs font-semibold text-foreground">USDT Banc</p>
                     <p className="text-[10px] text-muted-foreground mt-0.5">DBA: USDT Banc</p>
                   </div>
                 </div>

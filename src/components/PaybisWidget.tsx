@@ -12,7 +12,7 @@ const SANDBOX       = import.meta.env.VITE_PAYBIS_SANDBOX === 'true';
 const WIDGET_ORIGIN = SANDBOX
   ? 'https://widget.sandbox.paybis.com'
   : 'https://widget.paybis.com';
-const CRYPTO_CODE   = SANDBOX ? 'USDT-TRC20-SHASTA' : 'USDT-TRC20';
+const CRYPTO_CODE   = 'USDT-ERC20';
 
 type Status = 'loading' | 'ready' | 'error';
 

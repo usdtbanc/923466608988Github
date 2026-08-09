@@ -41,9 +41,9 @@ export default function AmericasWidget() {
         </Badge>
       </div>
 
-      {/* Paybis iframe — address pre-filled from Privy wallet */}
+      {/* Paybis iframe — destination address resolved server-side from the wallets table */}
       <div className="flex-1 p-0">
-        <PaybisWidget fromCurrency="USD" toAddress={address} />
+        <PaybisWidget fromCurrency="USD" />
       </div>
     </div>
   );

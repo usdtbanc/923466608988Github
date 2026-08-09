@@ -7,13 +7,29 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { User, Phone, Mail, Shield, Save, Lock, KeyRound, QrCode, ShieldCheck } from 'lucide-react';
+import { User, Phone, Mail, Shield, Save, Lock, KeyRound, QrCode, ShieldCheck, Download } from 'lucide-react';
 import bcrypt from 'bcryptjs';
 import { QRCodeSVG } from 'qrcode.react';
+import { usePrivy, useExportWallet } from '@privy-io/react-auth';
 
 export const Profile = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { user: privyUser, authenticated: privyAuthenticated } = usePrivy();
+  const { exportWallet } = useExportWallet();
+  const isEmbeddedWallet = privyUser?.wallet?.walletClientType === 'privy';
+
+  const handleExportWallet = async () => {
+    try {
+      await exportWallet();
+    } catch (err: any) {
+      toast({
+        title: 'Export failed',
+        description: err?.message || 'Could not open the export flow. Please try again.',
+        variant: 'destructive',
+      });
+    }
+  };
   const [loading, setLoading] = useState(false);
   const [profile, setProfile] = useState({
     full_name: '',
@@ -321,6 +337,33 @@ export const Profile = () => {
                   </div>
                 </div>
               )}
+            </div>
+
+            {/* Export Wallet — full self-custody: lets the user pull their private key/seed
+                phrase out of Privy's embedded wallet into an independent wallet client. Only
+                applicable to wallets created via email login; externally-connected wallets
+                (e.g. MetaMask) already hold their own keys outside this app. */}
+            <div className="p-3 sm:p-4 bg-muted/50 rounded-lg space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-semibold text-sm sm:text-base">Export Wallet</h3>
+                  <p className="text-sm text-muted-foreground">
+                    {isEmbeddedWallet
+                      ? 'Reveal your private key/seed phrase to use in another wallet, fully independent of this app'
+                      : 'Your connected wallet already holds its own keys outside this app — nothing to export here'}
+                  </p>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="text-xs sm:text-sm"
+                  onClick={handleExportWallet}
+                  disabled={!privyAuthenticated || !isEmbeddedWallet}
+                >
+                  <Download className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                  Export
+                </Button>
+              </div>
             </div>
 
             {/* Withdrawal Password */}
