@@ -5,45 +5,67 @@ import { RotateCcw } from "lucide-react";
 
 const sections = [
   {
-    title: "No Direct Transactions",
+    title: "1. Refund Policy",
     paragraphs: [
-      `USDT Banc does not sell, custody, or process cryptocurrency transactions directly. All cryptocurrency purchases, sales, and fiat on-ramp and off-ramp services are provided by independent third-party service providers.`,
+      `Completed Digital Asset transactions are final. The Company does not provide refunds, chargebacks, exchanges, or cancellations for completed transactions. Once a Digital Asset transaction has been transferred or confirmed on the applicable Blockchain, it generally cannot be reversed by the Company, by any Third-Party Provider, or by any other party.`,
+      `If a refund, reversal, or cancellation is available to you under applicable law, or under the terms of the Third-Party Provider that processed your transaction, such a request must be directed to that Third-Party Provider and will be governed exclusively by that provider's own terms and procedures. The Company will direct you to the appropriate Third-Party Provider upon request but has no independent obligation to provide, fund, or guarantee any refund.`,
     ],
   },
   {
-    title: "No Refunds or Cancellations",
+    title: "2. Cryptocurrency Risk Disclosure",
     paragraphs: [
-      `USDT Banc does not provide refunds, cancellations, chargebacks, or exchanges for completed cryptocurrency transactions. Any request relating to a transaction, including a refund where applicable under law or the policies of the service provider, must be submitted directly to the third-party provider that processed the transaction and will be governed by that provider's terms and conditions.`,
+      `Digital Assets involve significant risk, and you should not transact in Digital Assets unless you understand and can bear these risks, including that:`,
+      `Digital Assets can be extremely volatile, and their value can decline rapidly and substantially, including to zero.`,
+      `Digital Assets are not legal tender, are not backed by any government, and are not insured by the FDIC, SIPC, or any similar deposit or investor protection scheme.`,
+      `The regulatory treatment of Digital Assets is uncertain and evolving, and future legal or regulatory developments could adversely affect the value, transferability, or legality of a given Digital Asset.`,
+      `Blockchain networks may be subject to protocol changes, forks, congestion, or attacks that could affect the availability or integrity of your Digital Assets.`,
+      `Cybersecurity threats, including phishing, malware, and social engineering, can result in irreversible loss of Digital Assets.`,
+      `Transactions, once confirmed, generally cannot be reversed, and loss of access credentials can result in permanent, unrecoverable loss.`,
+      `You should only transact in amounts you can afford to lose and should independently evaluate the suitability of any Digital Asset for your circumstances.`,
     ],
   },
   {
-    title: "Transaction Finality",
+    title: "3. Acceptable Use and Prohibited Activities",
     paragraphs: [
-      `Due to the nature of blockchain technology, completed cryptocurrency transactions are generally irreversible. If you wish to convert your cryptocurrency back into fiat currency, you must initiate a separate sale through an available third-party off-ramp provider, subject to that provider's pricing, fees, verification requirements, and applicable laws.`,
+      `You agree to use the Platform only for lawful purposes and in accordance with these Terms. You must not, and must not attempt to:`,
+      `Use the Platform for any illegal purpose, including money laundering, terrorist financing, fraud, or evasion of sanctions.`,
+      `Access or use the Platform if you are located in, or ordinarily resident in, a jurisdiction subject to comprehensive sanctions, or if you are identified on any sanctions or restricted party list.`,
+      `Circumvent, disable, or interfere with any security-related feature of the Platform.`,
+      `Access the Platform through automated means, scrape data from the Platform, or reverse engineer, decompile, or disassemble any part of the Platform, except to the extent such restriction is prohibited by applicable law.`,
+      `Impersonate any person or entity, or misrepresent your affiliation with any person or entity.`,
+      `Create multiple Accounts to evade a restriction, suspension, or geographic limitation imposed under these Terms.`,
+      `Use the Platform in a manner that violates the terms of service of any Third-Party Provider integrated with the Platform.`,
+      `Engage in any activity that could damage, disable, or impair the Platform or interfere with any other user's use of the Platform.`,
+      `Violation of this Section 3 may result in suspension or termination of your Account under Section 7, in addition to any other remedy available to the Company.`,
     ],
   },
   {
-    title: "Price Volatility",
+    title: "4. Regulatory Compliance; KYC/AML",
     paragraphs: [
-      `USDT Banc is not responsible for any loss resulting from cryptocurrency price fluctuations, market volatility, exchange rates, network congestion, or fees incurred between the purchase and subsequent sale of digital assets.`,
+      `Creating an Embedded Wallet on the Platform does not require identity verification from the Company. However, if you buy or sell Digital Assets through Paybis, or through any future Third-Party Provider engaged for that purpose, you may be required to complete identity verification, Know Your Customer (KYC) checks, Anti-Money Laundering (AML) review, sanctions screening, or other compliance procedures imposed by that Third-Party Provider and applicable law.`,
+      `The Company does not perform KYC in connection with Embedded Wallet creation and is not responsible for the compliance procedures, decisions, or determinations made by any Third-Party Provider, including decisions to decline, delay, restrict, or reverse a transaction based on that provider's own compliance program.`,
+      `The Company may independently request information from you, restrict your access to the Platform, or report information to governmental authorities where required to comply with applicable law, to respond to legal process, or to prevent fraud or other harm.`,
     ],
   },
   {
-    title: "User Responsibility for Accuracy",
+    title: "5. Intellectual Property",
     paragraphs: [
-      `Users are solely responsible for verifying the accuracy of wallet addresses, blockchain networks, and recipient information before confirming any transaction. Cryptocurrency sent to an incorrect wallet address, incompatible blockchain network, or unintended recipient is generally irreversible and may be permanently lost.`,
+      `The Platform, including its software, design, text, graphics, logos, and the USDT Banc name and marks, is owned by the Company or its licensors and is protected by intellectual property laws. Subject to your compliance with these Terms, the Company grants you a limited, personal, non-exclusive, non-transferable, revocable license to access and use the Platform for its intended purpose.`,
+      `You may not copy, modify, distribute, sell, lease, reverse engineer, or create derivative works based on the Platform, except as expressly permitted by applicable law notwithstanding this restriction. Any feedback or suggestions you provide regarding the Platform may be used by the Company without restriction or compensation to you.`,
     ],
   },
   {
-    title: "No Control Over Blockchain",
+    title: "6. Privacy",
     paragraphs: [
-      `USDT Banc does not control blockchain networks, does not have access to users' private keys or wallet credentials, and cannot reverse, cancel, recover, or retrieve cryptocurrency transactions once they have been processed by the applicable third-party provider or confirmed on the blockchain. Accordingly, USDT Banc shall not be liable for losses arising from user error, unauthorized access to a user's wallet, incorrect transfer instructions, or transactions completed through third-party service providers.`,
+      `Our collection, use, and disclosure of your personal information is described in our Privacy Policy, available at https://www.usdtbanc.com/privacy, which is incorporated into these Terms by reference. By using the Platform, you consent to the collection and use of your information as described in the Privacy Policy.`,
     ],
   },
   {
-    title: "Acknowledgement",
+    title: "7. Suspension and Termination",
     paragraphs: [
-      `By using USDT Banc, you acknowledge and agree that you understand the irreversible nature of cryptocurrency transactions and that USDT Banc does not provide refunds for transactions processed through its platform.`,
+      `The Company may suspend, restrict, or terminate your access to the Platform, in whole or in part, at any time, with or without notice, including where: (a) you breach these Terms; (b) the Company reasonably suspects fraud, illegal activity, or a violation of applicable law; (c) suspension or termination is required to comply with applicable law or legal process; (d) a Third-Party Provider restricts, suspends, or terminates services relevant to your Account; or (e) your Account has been inactive for an extended period.`,
+      `Because Embedded Wallets rely in part on Account-level authentication, suspension or termination of your Account may affect your practical ability to access your Embedded Wallet, as described in Section 6. Where reasonably practicable and not inconsistent with a legal or security requirement, the Company will provide you an opportunity to export your wallet recovery information before finalizing termination.`,
+      `You may stop using the Platform at any time. Termination of these Terms does not relieve you of any obligation that accrued prior to termination, including payment of any outstanding fees.`,
     ],
   },
 ];
@@ -51,7 +73,7 @@ const sections = [
 export const RefundPolicy = () => {
   useEffect(() => {
     document.title = "Refund Policy & Transaction Finality • USDT BANC";
-    const desc = "USDT Banc Refund Policy: transaction finality, no-refund policy, and user responsibilities.";
+    const desc = "USDT Banc Refund Policy & Transaction Terms: refunds, risk disclosure, acceptable use, compliance, IP, privacy, and account termination.";
     const md = document.querySelector('meta[name="description"]');
     if (md) md.setAttribute("content", desc);
     else {
@@ -67,7 +89,7 @@ export const RefundPolicy = () => {
         <div className="relative p-6 lg:p-8">
           <h1 className="text-3xl lg:text-4xl font-bold mb-2">Refund Policy & Transaction Finality</h1>
           <p className="text-muted-foreground max-w-3xl">
-            Understanding transaction finality, refund limitations, and your responsibilities when using USDT Banc.
+            Refund policy, cryptocurrency risk disclosure, acceptable use, regulatory compliance, intellectual property, privacy, and account suspension/termination terms.
           </p>
         </div>
       </section>
