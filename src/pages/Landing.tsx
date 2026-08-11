@@ -496,7 +496,7 @@ export const Landing = () => {
                   </div>
                   <div>
                     <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium mb-0.5">Entity Registration</p>
-                    <p className="text-xs font-semibold text-foreground">202359718215</p>
+                    <p className="text-xs font-semibold text-foreground">B20260213455</p>
                   </div>
                 </div>
                 {/* Address */}
