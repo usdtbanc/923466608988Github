@@ -3,6 +3,8 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const ALLOWED_ORIGINS = new Set([
   'http://localhost:8080',
+  'https://usdtbanc.com',
+  'https://www.usdtbanc.com',
   'https://usdtnexus.netlify.app',
   'https://paybis-v3.netlify.app',
   'https://paybis-v3-integration.netlify.app',
