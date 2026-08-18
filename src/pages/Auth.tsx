@@ -17,6 +17,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { hashSync } from 'bcryptjs';
 import { usePrivy } from '@privy-io/react-auth';
+import { TERMS_INTRO, TERMS_EFFECTIVE_DATE, TERMS_SECTIONS } from '@/lib/termsContent';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -474,41 +475,22 @@ export const Auth = () => {
                         if (el.scrollTop + el.clientHeight >= el.scrollHeight - 4) setHasScrolledTerms(true);
                       }}
                     >
-                      <p className="mb-1 font-medium">Terms & Conditions</p>
-                      <p className="mb-2 text-muted-foreground">Effective Date: {new Date().toLocaleDateString()}</p>
-                      <p className="mb-2">Welcome to USDT Banc (“we,” “our,” or “us”). By accessing or using www.usdtbanc.com (the “Website”) or our services, you agree to these Terms & Conditions. If you do not agree, please do not use our services.</p>
-                      <ul className="list-disc pl-5 space-y-1">
-                        <li>
-                          <strong>Eligibility:</strong> You must be at least 18 years old and legally allowed to use cryptocurrency services in your country. By signing up, you confirm that all information you provide is accurate and complete.
-                        </li>
-                        <li>
-                          <strong>Services Provided:</strong> USDT Banc provides tools to help you sign up, purchase cryptocurrency, and hold or transfer it. We do not offer investment advice, and all purchases are made at your own risk.
-                        </li>
-                        <li>
-                          <strong>User Responsibilities:</strong> Keep your account details secure and confidential; use our services only for lawful purposes; you are responsible for all transactions made under your account.
-                        </li>
-                        <li>
-                          <strong>Risks of Cryptocurrency:</strong> Cryptocurrency values can be volatile. You acknowledge these risks and will not hold USDT Banc responsible for any losses.
-                        </li>
-                        <li>
-                          <strong>No Financial Advice:</strong> Information provided is for educational purposes only. We do not provide investment, tax, or legal advice.
-                        </li>
-                        <li>
-                          <strong>Third-Party Services:</strong> We may use third-party payment processors or wallet providers; usage is subject to their terms and policies.
-                        </li>
-                        <li>
-                          <strong>Limitation of Liability:</strong> USDT Banc is not liable for any direct, indirect, or incidental damages resulting from your use of our services, including but not limited to loss of funds, data breaches, or system errors.
-                        </li>
-                        <li>
-                          <strong>Termination:</strong> We may suspend or terminate your account at any time if you violate these Terms & Conditions or engage in fraudulent activity.
-                        </li>
-                        <li>
-                          <strong>Changes to Terms:</strong> We may update these Terms & Conditions at any time. Continued use means you accept the updated terms.
-                        </li>
-                        <li>
-                          <strong>Contact:</strong> On WhatsApp (log in). Website: www.usdtbanc.com
-                        </li>
-                      </ul>
+                      <p className="mb-1 font-medium">Terms of Service</p>
+                      <p className="mb-2 text-muted-foreground">Last Updated Date: {TERMS_EFFECTIVE_DATE}</p>
+                      <p className="mb-2">{TERMS_INTRO}</p>
+                      {TERMS_SECTIONS.map((section, i) => (
+                        <div key={section.title} className="mb-2">
+                          <p className="font-medium">{i + 1}. {section.title}</p>
+                          <ul className="list-disc pl-5 space-y-1">
+                            {section.points.map((point) => (
+                              <li key={point}>{point}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      ))}
+                      <p className="text-muted-foreground">
+                        This is a summary view — read the full <Link to="/terms" className="underline hover:text-foreground" target="_blank">Terms of Service</Link> and <Link to="/privacy" className="underline hover:text-foreground" target="_blank">Privacy Policy</Link> for complete details.
+                      </p>
                     </div>
 
                     <div className="flex items-start gap-2">
