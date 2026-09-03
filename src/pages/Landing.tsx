@@ -468,7 +468,7 @@ export const Landing = () => {
             </div>
           </div>
 
-          {/* Company details — required by Paybis compliance */}
+          {/* Company details — required by Stripe compliance */}
           <div className="border-t border-border/60 pt-6 mb-4">
             <div className="rounded-2xl border border-primary/20 bg-card p-6 neon-border space-y-6">
               <div className="flex flex-wrap items-center gap-2">

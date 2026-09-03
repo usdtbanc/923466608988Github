@@ -42,7 +42,7 @@ const sections = [
   {
     title: "4. Regulatory Compliance; KYC/AML",
     paragraphs: [
-      `Creating an Embedded Wallet on the Platform does not require identity verification from the Company. However, if you buy or sell Digital Assets through Paybis, or through any future Third-Party Provider engaged for that purpose, you may be required to complete identity verification, Know Your Customer (KYC) checks, Anti-Money Laundering (AML) review, sanctions screening, or other compliance procedures imposed by that Third-Party Provider and applicable law.`,
+      `Creating an Embedded Wallet on the Platform does not require identity verification from the Company. However, if you buy Digital Assets through Stripe, or through any future Third-Party Provider engaged for that purpose, you may be required to complete identity verification, Know Your Customer (KYC) checks, Anti-Money Laundering (AML) review, sanctions screening, or other compliance procedures imposed by that Third-Party Provider and applicable law.`,
       `The Company does not perform KYC in connection with Embedded Wallet creation and is not responsible for the compliance procedures, decisions, or determinations made by any Third-Party Provider, including decisions to decline, delay, restrict, or reverse a transaction based on that provider's own compliance program.`,
       `The Company may independently request information from you, restrict your access to the Platform, or report information to governmental authorities where required to comply with applicable law, to respond to legal process, or to prevent fraud or other harm.`,
     ],

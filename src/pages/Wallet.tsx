@@ -82,7 +82,7 @@ export const Wallet = () => {
   }, [privyAuthenticated, user?.wallet, user?.smartWallet]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Keep the wallet's on-chain address in sync in the DB, so server-side flows
-  // (e.g. the Paybis edge function) know where to deliver purchased crypto.
+  // (e.g. the Stripe Onramp edge function) know where to deliver purchased crypto.
   useEffect(() => {
     if (!supabaseUser || !smartAddress) return;
     supabase

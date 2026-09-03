@@ -24,7 +24,7 @@ A secure, non-custodial crypto banking web application enabling multi-chain wall
 - **Bitcoin**: BTC wallet with BIP32/BIP39 support
 
 💳 **Fiat On-Ramp Integration**
-- Paybis widget for USD (Americas) and EUR (Eurozone)
+- Stripe Crypto Onramp widget for USD (Americas) and EUR (Eurozone)
 - Buy crypto directly with fiat currency
 - Real-time exchange rate integration
 
@@ -83,9 +83,8 @@ Required for local development (`.env.local`):
 # Privy Embedded Wallets
 VITE_PRIVY_APP_ID=<from_privy_dashboard>
 
-# Paybis Fiat On-Ramp
-VITE_PAYBIS_PARTNER_ID=<from_paybis_account>
-VITE_PAYBIS_SANDBOX=true
+# Stripe Fiat On-Ramp (Crypto Onramp)
+VITE_STRIPE_PUBLISHABLE_KEY=<from_stripe_dashboard>
 
 # Supabase
 VITE_SUPABASE_URL=<from_supabase_project>
@@ -94,8 +93,9 @@ VITE_SUPABASE_ANON_KEY=<from_supabase_project>
 
 Edge function secret (Supabase only):
 ```
-PAYBIS_API_KEY=<from_paybis_account>
+STRIPE_SECRET_KEY=<from_stripe_dashboard>
 ```
+Test vs. live mode is determined by the key prefix (`pk_test_`/`sk_test_` vs `pk_live_`/`sk_live_`) — no separate sandbox flag needed.
 
 ## Build & Deployment
 
@@ -121,7 +121,7 @@ npm run preview    # Preview production build locally
 src/
 ├── components/              # Reusable components
 │   ├── Layout.tsx          # App shell & navigation
-│   ├── PaybisWidget.tsx    # Fiat on-ramp iframe
+│   ├── StripeWidget.tsx    # Fiat on-ramp (Stripe Crypto Onramp) widget
 │   ├── WalletSetup.tsx     # Privy OTP gate
 │   ├── TwoFactorVerifyModal.tsx
 │   └── ui/                 # shadcn/ui primitives
@@ -141,7 +141,7 @@ src/
 
 supabase/
 └── functions/
-    └── paybis-request/     # Edge function for API key handling
+    └── stripe-onramp-session/  # Edge function for Stripe secret key handling
 ```
 
 ## Authentication Flow
@@ -192,7 +192,7 @@ See [CLAUDE.md](./CLAUDE.md) for complete development conventions.
 ## Current Branches
 
 - `main` - Production-ready code
-- `api-based-integration` - Active development (Paybis integration)
+- `api-based-integration` - Active development (Stripe Crypto Onramp integration)
 - Other feature branches as needed
 
 ## Troubleshooting

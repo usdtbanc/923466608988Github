@@ -16,7 +16,7 @@ A non-custodial crypto banking web app built with React + Vite + TypeScript + Su
 | Server state | @tanstack/react-query (staleTime 5min, no refetchOnWindowFocus) |
 | Backend / DB | Supabase (Postgres + Auth + Realtime + Edge Functions) |
 | Embedded wallets | Privy (`@privy-io/react-auth`) — wraps the whole app at `main.tsx` |
-| Fiat on-ramp | Paybis iframe widget + Supabase Edge Function (`paybis-request`) |
+| Fiat on-ramp | Stripe Crypto Onramp embedded widget + Supabase Edge Function (`stripe-onramp-session`) |
 | Styling | Tailwind CSS v3 + CSS variables + tailwindcss-animate |
 | UI primitives | shadcn/ui (all Radix UI components) |
 | Animation | framer-motion |
@@ -37,9 +37,9 @@ src/
   assets/                     # Static assets (SVGs, images)
   components/
     Layout.tsx                # App shell: sidebar nav, header, WhatsApp support float
-    AmericasWidget.tsx        # Paybis buy-USDT iframe (USD, Privy wallet address pre-filled)
-    EurozoneWidget.tsx        # Paybis buy-USDT iframe (EUR, Privy wallet address pre-filled)
-    PaybisWidget.tsx          # Core Paybis iframe component — fetches requestId from edge fn
+    AmericasWidget.tsx        # Stripe Onramp buy-USDT widget (USD, Privy wallet address pre-filled)
+    EurozoneWidget.tsx        # Stripe Onramp buy-USDT widget (EUR, Privy wallet address pre-filled)
+    StripeWidget.tsx          # Core Stripe Onramp widget — mounts session from edge fn's client secret
     WalletSetup.tsx           # One-time Privy OTP gate shown after Supabase login
     TwoFactorVerifyModal.tsx  # 2FA modal (TOTP)
     ui/                       # shadcn/ui components (do not hand-edit)
@@ -69,7 +69,7 @@ src/
     About.tsx Terms.tsx Privacy.tsx NotFound.tsx Index.tsx
 
 supabase/functions/
-  paybis-request/index.ts    # Deno edge function — calls Paybis /v2/request server-side
+  stripe-onramp-session/index.ts  # Deno edge function — calls Stripe /v1/crypto/onramp_sessions server-side
 ```
 
 ---
@@ -126,32 +126,39 @@ import { supabase } from "@/integrations/supabase/client";
 
 ---
 
-## Paybis Fiat On-Ramp
+## Stripe Fiat On-Ramp (Crypto Onramp)
 
-Paybis is a buy-crypto iframe widget embedded in the Home page for two regions.
+Stripe's hosted-redirect Crypto Onramp is linked from the Home page for two regions. It buys USDC on the Ethereum network and delivers it to the user's Privy embedded wallet address.
+
+USES THE HOSTED REDIRECT FLOW, NOT THE EMBEDDED IFRAME SDK. The embedded flow (Stripe's `.mount()` iframe approach) was tried first but its final purchase step (`start_purchase`) consistently failed for this Stripe account — including in Incognito with no extensions — pointing to something in running Stripe's hosted-mode internals inside a third-party iframe. Switched to sending the user to Stripe's own hosted page (`redirect_url`) instead, which uses the exact same session-creation call, just without the iframe.
+
+CONFIRMED WORKING END-TO-END (full sandbox test purchase completed successfully — payment confirmed, USDC delivered to wallet, receipt emailed, wallet address pre-fill working).
+
+RESOLVED ISSUES (both were Stripe-side bugs for this account, not this codebase — kept here for history):
+1. Pre-filling `wallet_addresses` at session creation used to break Stripe's own "Add a new wallet" screen with `"You passed an empty string for 'wallet_address'"`, even though the UI displayed the address correctly as valid. Worked around at the time by NOT pre-filling it (`StripeWidget` showed a copy-to-clipboard box instead). Stripe fixed this — pre-fill is re-enabled and confirmed working again.
+2. `start_purchase` (an internal Stripe endpoint, not something we call directly) used to fail with `499` on every attempt. ROOT CAUSE (confirmed by Stripe developer support): Stripe rejects `first_name` values containing characters outside `[A-Za-z ',.-]` with `"invalid first_name format"`, but was silently returning a generic `499` instead of that actionable error. Not a bug in this codebase — we don't send `first_name` at all (KYC is entered directly in Stripe's hosted UI). Just make sure names entered during KYC only use Latin letters, spaces, `'`, `-`, or `.`.
+
+NOTE: USDT is not enabled for this Stripe account's Crypto Onramp — confirmed against the live API, supported currencies are currently `btc, eth, matic, sol, xlm, avax, wld, usdc`. USDC was chosen as the closest stablecoin substitute; swap `DESTINATION_CURRENCY` back to `usdt` in the edge function if/when Stripe enables it for this account.
 
 ### Flow
 1. User clicks **AMERICAS** or **EUROZONE** on `Home.tsx`
 2. The matching widget component (`AmericasWidget` / `EurozoneWidget`) reads the Privy embedded wallet address via `useWallets()`
-3. It renders `<PaybisWidget fromCurrency="USD|EUR" toAddress={privyAddress} />`
-4. `PaybisWidget` calls the Supabase Edge Function `paybis-request` (server-side) to get a `requestId`
-5. The edge function POSTs to Paybis `/v2/request` with `partnerUserId`, `email`, `cryptoWalletAddress`, keeping the API key secret
-6. The iframe is rendered at `https://widget[.sandbox].paybis.com/?requestId=...&partnerId=...`
-7. `window.postMessage` events (`completed`, `rejected`, `error`) are listened to from the iframe
+3. It renders `<StripeWidget fromCurrency="usd|eur" />`
+4. `StripeWidget` calls the Supabase Edge Function `stripe-onramp-session` (server-side) to get a `redirect_url`, passing `returnUrl: window.location.href` so Stripe brings the user back here when done. The edge function looks the destination wallet address up server-side from the `wallets` table
+5. The edge function POSTs to Stripe `/v1/crypto/onramp_sessions` with `wallet_addresses`, `destination_currency`/`destination_network` (locked to `usdc`/`ethereum`), `source_currency`, and `finish_url` (the return URL), keeping the secret key server-side only
+6. `StripeWidget` renders a "Continue to Stripe" link/button pointing at the returned `redirect_url` (`https://crypto.link.com?session_hash=...`) — clicking it navigates the whole page there; no client-side Stripe SDK or `<script>` tags are needed for this flow
 
 ### Files
-- `src/components/PaybisWidget.tsx` — iframe component, handles loading/error states
+- `src/components/StripeWidget.tsx` — fetches the redirect URL, renders the "Continue to Stripe" link, handles loading/error states
 - `src/components/AmericasWidget.tsx` — USD region, uses Privy wallet address
 - `src/components/EurozoneWidget.tsx` — EUR region, uses Privy wallet address
-- `supabase/functions/paybis-request/index.ts` — Deno edge function, server-side API key holder
+- `supabase/functions/stripe-onramp-session/index.ts` — Deno edge function, server-side secret key holder
 
 ### Env vars required
 ```
-VITE_PAYBIS_PARTNER_ID=...     # Public partner ID (frontend)
-VITE_PAYBIS_SANDBOX=true|false # Toggle sandbox mode (frontend)
-PAYBIS_API_KEY=...             # Secret API key (Supabase edge function secret only)
-PAYBIS_SANDBOX=true|false      # Edge function sandbox toggle
+STRIPE_SECRET_KEY=... # Secret key, sk_test_/sk_live_ (Supabase edge function secret only)
 ```
+`VITE_STRIPE_PUBLISHABLE_KEY` is NOT needed for this flow (only the embedded-SDK approach would need it) — safe to leave unset. Test vs. live mode is determined purely by which key prefix you use — there is no separate sandbox toggle, unlike the old Paybis setup.
 
 ---
 

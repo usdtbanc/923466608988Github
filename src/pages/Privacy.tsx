@@ -51,7 +51,7 @@ export const Privacy = () => {
         "Password (stored using industry-standard hashing techniques, never in plaintext).",
         "Withdrawal password (stored using industry-standard encryption techniques, never in plaintext).",
         "Internal user/profile identifier assigned by the Platform for account administration.",
-        "Because Fiat On-Ramp and Fiat Off-Ramp Transactions are processed by Paybis, any identity verification documents or KYC information you provide in connection with such a transaction (for example, a government-issued ID or proof of address) are collected and processed directly by Paybis under its own privacy policy, not by USDT Banc. We may receive limited transaction status information from Paybis (such as whether a transaction was completed, declined, or flagged) for customer support, recordkeeping, and fraud-prevention purposes.",
+        "Because Fiat On-Ramp Transactions are processed by Stripe, any identity verification documents or KYC information you provide in connection with such a transaction (for example, a government-issued ID or proof of address) are collected and processed directly by Stripe under its own privacy policy, not by USDT Banc. We may receive limited transaction status information from Stripe (such as whether a transaction was completed, declined, or flagged) for customer support, recordkeeping, and fraud-prevention purposes.",
       ],
     },
     {
@@ -95,7 +95,7 @@ export const Privacy = () => {
       title: "5. Sharing of Information; Third-Party Service Providers",
       points: [
         "We share personal information with the following categories of recipients, only to the extent necessary to provide the Platform:",
-        "Paybis, to facilitate Fiat On-Ramp and Fiat Off-Ramp Transactions, including identity verification information you provide directly to Paybis.",
+        "Stripe, to facilitate Fiat On-Ramp Transactions, including identity verification information you provide directly to Stripe.",
         "Privy, to provide embedded wallet infrastructure and authentication services.",
         "Supabase, which hosts our backend database infrastructure.",
         "Namecheap, which provides hosting and domain services for the Platform.",

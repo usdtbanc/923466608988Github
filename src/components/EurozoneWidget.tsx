@@ -1,6 +1,6 @@
 import { Globe } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import PaybisWidget from "@/components/PaybisWidget";
+import StripeWidget from "@/components/StripeWidget";
 import { useSmartWallets } from "@privy-io/react-auth/smart-wallets";
 import { useWallets } from "@privy-io/react-auth";
 
@@ -41,9 +41,9 @@ export default function EurozoneWidget() {
         </Badge>
       </div>
 
-      {/* Paybis iframe — destination address resolved server-side from the wallets table */}
+      {/* Stripe Onramp — destination address resolved server-side from the wallets table */}
       <div className="flex-1 p-0">
-        <PaybisWidget fromCurrency="EUR" />
+        <StripeWidget fromCurrency="eur" />
       </div>
     </div>
   );
