@@ -40,11 +40,12 @@ src/
     AmericasWidget.tsx        # Stripe Onramp buy-USDT widget (USD, Privy wallet address pre-filled)
     EurozoneWidget.tsx        # Stripe Onramp buy-USDT widget (EUR, Privy wallet address pre-filled)
     StripeWidget.tsx          # Core Stripe Onramp widget — mounts session from edge fn's client secret
-    WalletSetup.tsx           # One-time Privy OTP gate shown after Supabase login
+    WalletActivationGate.tsx  # Blocks entry into the app until the Privy wallet is activated
     TwoFactorVerifyModal.tsx  # 2FA modal (TOTP)
     ui/                       # shadcn/ui components (do not hand-edit)
   hooks/
     useAuth.ts                # Supabase auth session + isAuthenticated
+    useWalletActivation.ts    # Privy activation lifecycle: login state, createWallet, DB address sync
     useTransactions.ts        # Supabase transactions table + Realtime subscription
     useCryptoData.ts          # Market/price data
     useCoinGecko.ts           # CoinGecko API integration
@@ -88,19 +89,25 @@ The app uses **two auth systems in parallel**; both must be satisfied before the
 - **Provider:** `<PrivyProvider>` wraps the entire app in `main.tsx`
 - **Config:** `loginMethods: ['email', 'wallet']`, dark theme, `embeddedWallets: { createOnLogin: 'users-without-wallets' }`
 - **Key hooks:**
-  - `usePrivy()` → `{ ready, authenticated }` — `ready` means SDK initialized, `authenticated` means Privy session exists
-  - `useWallets()` → `wallets[]` — access embedded wallet via `wallets.find(w => w.walletClientType === 'privy')`
-  - `useLoginWithEmail()` → `{ sendCode, loginWithCode }` — used in `WalletSetup`
+  - `usePrivy()` → `{ ready, authenticated, login }` — `ready` means SDK initialized, `authenticated` means Privy session exists, `login()` opens Privy's own login modal
+  - `useCreateWallet()` / `useSmartWallets()` — wallet creation + smart-account address, wrapped by `useWalletActivation`
+  - Both consumed via the shared `useWalletActivation` hook (`src/hooks/useWalletActivation.ts`) — do not call these directly in a page; use the hook so activation logic stays in one place
 
 ### Auth flow (`AppRoutes` in `App.tsx`)
 ```
-loading || !privyReady  →  <LoadingScreen />
-!isAuthenticated        →  <Auth />              (Supabase login)
-!privyAuthenticated     →  <WalletSetup />       (one-time Privy OTP gate)
-both authenticated      →  <Layout /> + routes
+loading                 →  <LoadingScreen />
+!isAuthenticated        →  <Auth />                  (Supabase login)
+isAuthenticated         →  <WalletActivationGate>     (blocks until Privy wallet activated)
+                              !privyReady    → spinner
+                              !privyAuthenticated → "Activate Your Wallet" card (calls Privy's login())
+                              both ready     → renders children
+                            <Layout /> + routes
+                           </WalletActivationGate>
 ```
 
-`WalletSetup` auto-sends an OTP to the user's email via `sendCode`, user enters it, `loginWithCode` creates the Privy embedded wallet. This only happens once per device.
+`WalletActivationGate` runs once, immediately after Supabase login, **before** the user ever sees Home — this is what makes wallet activation "seamless": the user is never expected to discover it by manually opening the Wallet page. Once `useWalletActivation`'s effects fire (`createWallet()` if no wallet exists yet, then syncing the resulting address to the `wallets` table), the gate never shows again on that device, and `Wallet.tsx` reuses the same hook purely to read `smartAddress` — it no longer duplicates any activation logic itself.
+
+HISTORY: there used to be a `WalletSetup.tsx` component intended to do this (a custom email-OTP screen), but it was never actually wired into `App.tsx` — dead code that looked load-bearing but wasn't. The real activation trigger lived only inside `Wallet.tsx` (an "Activate Wallet" button, calling Privy's native `login()`), meaning a user could reach Home and even attempt a Stripe purchase before ever creating a wallet. `WalletSetup.tsx` has been deleted; the fix moves that same proven `Wallet.tsx` logic up to `WalletActivationGate` instead of resurrecting the old broken component.
 
 ### Env vars required
 ```
@@ -128,11 +135,11 @@ import { supabase } from "@/integrations/supabase/client";
 
 ## Stripe Fiat On-Ramp (Crypto Onramp)
 
-Stripe's hosted-redirect Crypto Onramp is linked from the Home page for two regions. It buys USDC on the Ethereum network and delivers it to the user's Privy embedded wallet address.
+Stripe's embedded Crypto Onramp widget (`window.StripeOnramp` + `.mount()`) is embedded directly into the Home page for two regions — the purchase flow stays on-site, no redirect to a separate page. It buys USDC on the Ethereum network and delivers it to the user's Privy embedded wallet address.
 
-USES THE HOSTED REDIRECT FLOW, NOT THE EMBEDDED IFRAME SDK. The embedded flow (Stripe's `.mount()` iframe approach) was tried first but its final purchase step (`start_purchase`) consistently failed for this Stripe account — including in Incognito with no extensions — pointing to something in running Stripe's hosted-mode internals inside a third-party iframe. Switched to sending the user to Stripe's own hosted page (`redirect_url`) instead, which uses the exact same session-creation call, just without the iframe.
+HISTORY / MISDIAGNOSIS NOTE: this was briefly switched to a hosted-redirect flow (sending the user to `crypto.link.com`) after the embedded widget's `start_purchase` step failed with `499`. That was a misdiagnosis — the failure was actually caused by an invalid `first_name` in the test KYC data (see below), unrelated to embedded vs. redirect. Once that was fixed, the embedded widget was confirmed to work and is the flow in use — kept on-site as originally intended, matching Stripe's documented embedded integration.
 
-CONFIRMED WORKING END-TO-END (full sandbox test purchase completed successfully — payment confirmed, USDC delivered to wallet, receipt emailed, wallet address pre-fill working).
+CONFIRMED WORKING END-TO-END (full sandbox test purchase completed successfully via the hosted-redirect flow — payment confirmed, USDC delivered to wallet, receipt emailed, wallet address pre-fill working. Re-verify after reverting to embedded, since embedded wasn't re-tested post-fix as of this note).
 
 RESOLVED ISSUES (both were Stripe-side bugs for this account, not this codebase — kept here for history):
 1. Pre-filling `wallet_addresses` at session creation used to break Stripe's own "Add a new wallet" screen with `"You passed an empty string for 'wallet_address'"`, even though the UI displayed the address correctly as valid. Worked around at the time by NOT pre-filling it (`StripeWidget` showed a copy-to-clipboard box instead). Stripe fixed this — pre-fill is re-enabled and confirmed working again.
@@ -144,21 +151,24 @@ NOTE: USDT is not enabled for this Stripe account's Crypto Onramp — confirmed 
 1. User clicks **AMERICAS** or **EUROZONE** on `Home.tsx`
 2. The matching widget component (`AmericasWidget` / `EurozoneWidget`) reads the Privy embedded wallet address via `useWallets()`
 3. It renders `<StripeWidget fromCurrency="usd|eur" />`
-4. `StripeWidget` calls the Supabase Edge Function `stripe-onramp-session` (server-side) to get a `redirect_url`, passing `returnUrl: window.location.href` so Stripe brings the user back here when done. The edge function looks the destination wallet address up server-side from the `wallets` table
-5. The edge function POSTs to Stripe `/v1/crypto/onramp_sessions` with `wallet_addresses`, `destination_currency`/`destination_network` (locked to `usdc`/`ethereum`), `source_currency`, and `finish_url` (the return URL), keeping the secret key server-side only
-6. `StripeWidget` renders a "Continue to Stripe" link/button pointing at the returned `redirect_url` (`https://crypto.link.com?session_hash=...`) — clicking it navigates the whole page there; no client-side Stripe SDK or `<script>` tags are needed for this flow
+4. `StripeWidget` calls the Supabase Edge Function `stripe-onramp-session` (server-side) to get a `client_secret`, looking the destination wallet address up server-side from the `wallets` table
+5. The edge function POSTs to Stripe `/v1/crypto/onramp_sessions` with `wallet_addresses`, `destination_currency`/`destination_network` (locked to `usdc`/`ethereum`), and `source_currency`, keeping the secret key server-side only
+6. The Stripe Onramp JS SDK (`window.StripeOnramp`, loaded via `<script>` tags in `index.html` — see PCI compliance note there) creates a session from the `client_secret` and mounts it into a container div; Stripe manages its own iframe internally
+7. `session.addEventListener('onramp_session_updated', ...)` is used to observe status transitions (`fulfillment_complete`, `rejected`, etc.)
 
 ### Files
-- `src/components/StripeWidget.tsx` — fetches the redirect URL, renders the "Continue to Stripe" link, handles loading/error states
+- `src/components/StripeWidget.tsx` — mounts the Stripe Onramp embedded widget, handles loading/error states
 - `src/components/AmericasWidget.tsx` — USD region, uses Privy wallet address
 - `src/components/EurozoneWidget.tsx` — EUR region, uses Privy wallet address
 - `supabase/functions/stripe-onramp-session/index.ts` — Deno edge function, server-side secret key holder
+- `index.html` — loads the required Stripe onramp `<script>` tags (must load directly from Stripe's domains, never bundled)
 
 ### Env vars required
 ```
-STRIPE_SECRET_KEY=... # Secret key, sk_test_/sk_live_ (Supabase edge function secret only)
+VITE_STRIPE_PUBLISHABLE_KEY=... # Publishable key, pk_test_/pk_live_ (frontend)
+STRIPE_SECRET_KEY=...           # Secret key, sk_test_/sk_live_ (Supabase edge function secret only)
 ```
-`VITE_STRIPE_PUBLISHABLE_KEY` is NOT needed for this flow (only the embedded-SDK approach would need it) — safe to leave unset. Test vs. live mode is determined purely by which key prefix you use — there is no separate sandbox toggle, unlike the old Paybis setup.
+Test vs. live mode is determined purely by which key prefix you use — there is no separate sandbox toggle, unlike the old Paybis setup.
 
 ---
 

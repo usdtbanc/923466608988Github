@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { LoadingScreen } from "@/components/ui/loading-screen";
 import { Layout } from "./components/Layout";
+import { WalletActivationGate } from "./components/WalletActivationGate";
 import { useAuth } from "./hooks/useAuth";
 import { PublicPageShell } from "./components/PublicPageShell";
 import { Auth } from "./pages/Auth";
@@ -53,20 +54,22 @@ const AppRoutes = () => {
   }
 
   return (
-    <Routes>
-      <Route path="/" element={<Layout />}>
-        <Route index element={<Home />} />
-        <Route path="/market" element={<Market />} />
-        <Route path="/wallet" element={<Wallet />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/terms" element={<Terms />} />
-        <Route path="/privacy" element={<Privacy />} />
-        <Route path="/disclaimer" element={<Disclaimer />} />
-        <Route path="/refund-policy" element={<RefundPolicy />} />
-      </Route>
-      <Route path="*" element={<NotFound />} />
-    </Routes>
+    <WalletActivationGate>
+      <Routes>
+        <Route path="/" element={<Layout />}>
+          <Route index element={<Home />} />
+          <Route path="/market" element={<Market />} />
+          <Route path="/wallet" element={<Wallet />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/disclaimer" element={<Disclaimer />} />
+          <Route path="/refund-policy" element={<RefundPolicy />} />
+        </Route>
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </WalletActivationGate>
   );
 };
 

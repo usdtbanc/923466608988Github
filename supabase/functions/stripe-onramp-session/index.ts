@@ -117,14 +117,13 @@ serve(async (req) => {
       });
     }
 
-    // Using Stripe's hosted-redirect flow (redirect_url) rather than the embedded iframe
-    // SDK (client_secret + .mount()) — the embedded flow's final purchase step
-    // (start_purchase) consistently failed for this account, including in Incognito,
-    // which points to something specific to running Stripe's hosted-mode internals
-    // inside a third-party iframe rather than a client/cookie issue on our end.
-    // walletAddress is returned so the frontend can show/copy it for the user to paste
-    // in manually — wallet_addresses pre-fill is temporarily disabled above (see note).
-    return new Response(JSON.stringify({ redirectUrl: data.redirect_url, walletAddress: cryptoAddress }), {
+    // Returns both client_secret (for the embedded iframe SDK) and redirect_url (hosted
+    // fallback) from the same session — see StripeWidget.tsx for which one is active.
+    return new Response(JSON.stringify({
+      clientSecret: data.client_secret,
+      redirectUrl: data.redirect_url,
+      walletAddress: cryptoAddress,
+    }), {
       status: 200, headers: { ...CORS, 'Content-Type': 'application/json' },
     });
   } catch (err) {

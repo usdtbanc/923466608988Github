@@ -28,9 +28,7 @@ import { useEvmWallet } from '@/hooks/useEvmWallet';
 import { TwoFactorVerifyModal } from '@/components/TwoFactorVerifyModal';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/hooks/useAuth';
-import { usePrivy, useCreateWallet } from '@privy-io/react-auth';
-import { useSmartWallets } from '@privy-io/react-auth/smart-wallets';
+import { useWalletActivation } from '@/hooks/useWalletActivation';
 import { sepolia } from 'viem/chains';
 import { usePolygonUsdtBalance } from '@/hooks/usePolygonUsdtBalance';
 import { usePolygonSend } from '@/hooks/usePolygonSend';
@@ -66,35 +64,9 @@ export const Wallet = () => {
   const { sendUsdt, sending } = usePolygonSend();
   const { transactions, loading: txLoading, addTransaction } = useTransactions();
 
-  const { user: supabaseUser } = useAuth();
-  const { user, ready: privyReady, authenticated: privyAuthenticated, login } = usePrivy();
-  const { createWallet } = useCreateWallet();
-  const { client } = useSmartWallets();
-  const smartAddress: string | undefined =
-    client?.account?.address ?? user?.smartWallet?.address ?? user?.wallet?.address;
-
-  // Auto-create embedded wallet only after the user has connected/logged into Privy
-  useEffect(() => {
-    if (!privyAuthenticated) return;
-    if (!user?.wallet && !user?.smartWallet) {
-      createWallet().catch(() => {/* already exists */ });
-    }
-  }, [privyAuthenticated, user?.wallet, user?.smartWallet]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Keep the wallet's on-chain address in sync in the DB, so server-side flows
-  // (e.g. the Stripe Onramp edge function) know where to deliver purchased crypto.
-  useEffect(() => {
-    if (!supabaseUser || !smartAddress) return;
-    supabase
-      .from('wallets')
-      .upsert(
-        { user_id: supabaseUser.id, address: smartAddress, currency: 'ETH', network: 'ethereum' },
-        { onConflict: 'user_id,currency,network' },
-      )
-      .then(({ error }) => {
-        if (error) console.error('Failed to sync wallet address:', error);
-      });
-  }, [supabaseUser, smartAddress]);
+  // Wallet is already activated by the time this page renders — WalletActivationGate
+  // (App.tsx) handles Privy login, wallet creation, and DB address sync at app entry.
+  const { smartAddress } = useWalletActivation();
 
   const handleSend = async () => {
     const destination =
@@ -224,46 +196,9 @@ export const Wallet = () => {
     );
   }
 
-  // Privy is a separate, one-time sign-in from the site's own login — only
-  // triggered here, when the user opens the wallet, not during site auth.
-  if (!privyReady) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
-
-  if (!privyAuthenticated) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh] p-4">
-        <Card className="w-full max-w-md">
-          <CardContent className="p-6">
-            <div className="text-center space-y-4">
-              <div className="w-16 h-16 mx-auto rounded-full bg-gradient-to-r from-primary to-secondary p-0.5">
-                <div className="w-full h-full rounded-full bg-background flex items-center justify-center">
-                  <QrCode className="h-8 w-8 text-primary" />
-                </div>
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold">Activate Your Wallet</h3>
-                <p className="text-sm text-muted-foreground">
-                  Connect or create your on-chain wallet to send, receive, and buy crypto.
-                  This is a one-time setup — you won't be asked again on this device.
-                </p>
-              </div>
-              <Button
-                className="w-full bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90"
-                onClick={() => login()}
-              >
-                Activate Wallet
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  // Note: Privy activation (login, wallet creation, DB sync) is guaranteed to have
+  // already happened by the time this page renders — see WalletActivationGate in
+  // App.tsx, which gates the entire authenticated app on it at entry.
 
   return (
     <div className="min-h-screen bg-background">
