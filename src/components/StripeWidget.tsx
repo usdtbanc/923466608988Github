@@ -24,6 +24,33 @@ declare global {
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY as string | undefined;
 
+/**
+ * Pulls a human-readable message out of a failed supabase.functions.invoke() call.
+ * `error.context` (when present) is the raw fetch Response from the edge function, so
+ * its body has to be read to get our own function's actual { error: ... } payload —
+ * `error.message` alone is just a generic "non-2xx status code" string.
+ */
+async function extractErrorDetail(
+  error: { message?: string; context?: Response } | null | undefined,
+  data: unknown,
+): Promise<string> {
+  if (error?.context instanceof Response) {
+    try {
+      const body = await error.context.clone().json();
+      return typeof body === 'string' ? body : JSON.stringify(body);
+    } catch {
+      try {
+        return await error.context.clone().text();
+      } catch {
+        // fall through to error.message below
+      }
+    }
+  }
+  if (error?.message) return error.message;
+  if (data) return typeof data === 'string' ? data : JSON.stringify(data);
+  return 'Unknown error';
+}
+
 /** Waits for the async Stripe Onramp script (index.html) to attach window.StripeOnramp. */
 function waitForStripeOnramp(timeoutMs = 10000): Promise<NonNullable<Window['StripeOnramp']>> {
   return new Promise((resolve, reject) => {
@@ -49,6 +76,7 @@ export default function StripeWidget({ fromCurrency = 'usd' }: StripeWidgetProps
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [status, setStatus] = useState<Status>('loading');
   const [retryCount, setRetryCount] = useState(0);
+  const [errorDetail, setErrorDetail] = useState<string | null>(null);
 
   // Fetch a fresh client secret from Stripe via the edge function
   useEffect(() => {
@@ -58,14 +86,16 @@ export default function StripeWidget({ fromCurrency = 'usd' }: StripeWidgetProps
 
     setStatus('loading');
     setClientSecret(null);
+    setErrorDetail(null);
 
     supabase.functions.invoke('stripe-onramp-session', {
       body: { sourceCurrency: fromCurrency },
-    }).then(({ data, error }) => {
+    }).then(async ({ data, error }) => {
       if (cancelled) return;
 
       if (error || !data?.clientSecret) {
         console.error('[Stripe Onramp] Failed to get client secret', error ?? data);
+        setErrorDetail(await extractErrorDetail(error, data));
         setStatus('error');
         return;
       }
@@ -109,6 +139,7 @@ export default function StripeWidget({ fromCurrency = 'usd' }: StripeWidgetProps
       .catch((err) => {
         if (cancelled) return;
         console.error('[Stripe Onramp]', err);
+        setErrorDetail(err?.message ?? String(err));
         setStatus('error');
       });
 
@@ -133,6 +164,11 @@ export default function StripeWidget({ fromCurrency = 'usd' }: StripeWidgetProps
             <p className="text-sm text-muted-foreground">
               Failed to initialize the payment widget. Please try again.
             </p>
+            {errorDetail && (
+              <p className="text-xs text-muted-foreground/70 max-w-md break-words font-mono bg-muted rounded px-3 py-2">
+                {errorDetail}
+              </p>
+            )}
             <button
               onClick={() => setRetryCount(c => c + 1)}
               className="px-4 py-2 bg-primary text-primary-foreground text-sm rounded-md hover:bg-primary/90 transition-colors"
