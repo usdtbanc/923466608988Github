@@ -111,6 +111,7 @@ export default function StripeWidget({ fromCurrency = 'usd' }: StripeWidgetProps
     if (!clientSecret || !containerRef.current) return;
     if (!PUBLISHABLE_KEY) {
       console.error('[Stripe Onramp] Missing VITE_STRIPE_PUBLISHABLE_KEY');
+      setErrorDetail('Missing VITE_STRIPE_PUBLISHABLE_KEY — not set in this build environment.');
       setStatus('error');
       return;
     }
