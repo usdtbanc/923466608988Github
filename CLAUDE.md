@@ -37,8 +37,8 @@ src/
   assets/                     # Static assets (SVGs, images)
   components/
     Layout.tsx                # App shell: sidebar nav, header, WhatsApp support float
-    AmericasWidget.tsx        # Stripe Onramp buy-USDT widget (USD, Privy wallet address pre-filled)
-    EurozoneWidget.tsx        # Stripe Onramp buy-USDT widget (EUR, Privy wallet address pre-filled)
+    AmericasWidget.tsx        # Stripe Onramp buy-USDT widget (USD, shows Privy wallet address to copy)
+    EurozoneWidget.tsx        # Stripe Onramp buy-USDT widget (EUR, shows Privy wallet address to copy)
     StripeWidget.tsx          # Core Stripe Onramp widget — mounts session from edge fn's client secret
     WalletActivationGate.tsx  # Blocks entry into the app until the Privy wallet is activated
     TwoFactorVerifyModal.tsx  # 2FA modal (TOTP)
@@ -135,7 +135,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 ## Stripe Fiat On-Ramp (Crypto Onramp)
 
-Stripe's **hosted-redirect** Crypto Onramp flow is used — the edge function mints a session and returns a `redirect_url` on Stripe's own domain (`crypto.link.com`), and the user is sent there directly (with `finish_url` set so Stripe brings them back to this app afterward). It buys USDC on the Ethereum network and delivers it to the user's Privy embedded wallet address, which is pre-filled into the session server-side.
+Stripe's **hosted-redirect** Crypto Onramp flow is used — the edge function mints a session and returns a `redirect_url` on Stripe's own domain (`crypto.link.com`), and the user is sent there directly (with `finish_url` set so Stripe brings them back to this app afterward). It buys USDC on the Ethereum network and delivers it to the user's Privy embedded wallet address. **The address is NOT pre-filled into the session** (see RESOLVED ISSUES #1 below — it's not actually resolved, it recurs) — `StripeWidget` shows it in a copy-to-clipboard box instead, and the user pastes it manually on Stripe's wallet screen.
 
 HISTORY: this flow has flipped between embedded (`window.StripeOnramp` + `.mount()`, running Stripe's UI in an iframe on-site) and hosted-redirect more than once — don't re-flip it again without reading this in full.
 1. Embedded, originally.
@@ -146,9 +146,11 @@ HISTORY: this flow has flipped between embedded (`window.StripeOnramp` + `.mount
 
 If embedded is ever reconsidered: check git history on `StripeWidget.tsx` for the embedded implementation (event-logging diagnostics were added to it right before the switch back — see commit "Log all Stripe Onramp session events for diagnosing the wallet-confirm step" — if picking embedded back up, that logging is worth restoring too), and get Stripe support to actually explain the wallet-confirm-step failure first. Don't switch back purely because embedded "looks" more polished — it failed for real, repeatedly, for real users.
 
+KNOWN RECURRING ISSUE, currently worked around (Stripe-side bug for this account, not this codebase):
+1. Pre-filling `wallet_addresses` at session creation breaks Stripe's own hosted wallet-confirm screen: clicking Continue on the pre-filled wallet throws `"Unable to register your wallet: You passed an empty string for 'wallet_address'"` from Stripe's own internal `/v1/crypto/internal/onramp_session/update` call — even though our request and the displayed address are both correct. This has been "fixed" by Stripe before (confirmed working at one point) and then regressed at least once since (confirmed broken again 2026-09-07). **Currently disabled** in the edge function (the `wallet_addresses[...]` param is commented out) — don't re-enable without confirming with Stripe support first, and expect it to regress again even if they say it's fixed.
+
 RESOLVED ISSUES (Stripe-side bugs for this account, not this codebase — kept here for history):
-1. Pre-filling `wallet_addresses` at session creation used to break Stripe's own "Add a new wallet" screen with `"You passed an empty string for 'wallet_address'"`, even though the UI displayed the address correctly as valid. Stripe fixed this — pre-fill is enabled and confirmed working.
-2. `start_purchase` `499` — see HISTORY item 3 above.
+1. `start_purchase` `499` — see HISTORY item 3 above.
 
 NOTE: USDT is not enabled for this Stripe account's Crypto Onramp — confirmed against the live API, supported currencies are currently `btc, eth, matic, sol, xlm, avax, wld, usdc`. USDC was chosen as the closest stablecoin substitute; swap `DESTINATION_CURRENCY` back to `usdt` in the edge function if/when Stripe enables it for this account.
 
@@ -157,12 +159,12 @@ NOTE: USDT is not enabled for this Stripe account's Crypto Onramp — confirmed 
 2. The matching widget component (`AmericasWidget` / `EurozoneWidget`) reads the Privy embedded wallet address via `useWallets()` (for on-screen display only — not sent from the client)
 3. It renders `<StripeWidget fromCurrency="usd|eur" />`
 4. `StripeWidget` calls the Supabase Edge Function `stripe-onramp-session` with `sourceCurrency` and `returnUrl: window.location.href`, looking the destination wallet address up server-side from the `wallets` table
-5. The edge function POSTs to Stripe `/v1/crypto/onramp_sessions` with `wallet_addresses`, `destination_currency`/`destination_network` (locked to `usdc`/`ethereum`), `source_currency`, and `finish_url`, keeping the secret key server-side only, and returns both `redirect_url` and `client_secret` (only `redirect_url` is used currently)
-6. `StripeWidget` shows the pre-filled wallet address (with a copy button) and a "Continue to Stripe" link to `redirect_url` — clicking it navigates the user to Stripe's hosted page (`crypto.link.com`) to complete KYC and payment
+5. The edge function POSTs to Stripe `/v1/crypto/onramp_sessions` with `destination_currency`/`destination_network` (locked to `usdc`/`ethereum`), `source_currency`, and `finish_url` (NOT `wallet_addresses` — see KNOWN RECURRING ISSUE above), keeping the secret key server-side only, and returns both `redirect_url` and `client_secret` plus the looked-up `walletAddress` (only `redirect_url` and `walletAddress` are used currently)
+6. `StripeWidget` shows the wallet address in a copy-to-clipboard box (the user pastes it manually — see above) and a "Continue to Stripe" link to `redirect_url` — clicking it navigates the user to Stripe's hosted page (`crypto.link.com`) to complete KYC and payment
 7. Stripe redirects back to `finish_url` when the user finishes or abandons the flow
 
 ### Files
-- `src/components/StripeWidget.tsx` — fetches the redirect URL, shows the pre-filled wallet address + "Continue to Stripe" link, handles loading/error states
+- `src/components/StripeWidget.tsx` — fetches the redirect URL, shows the wallet address (copy-to-clipboard) + "Continue to Stripe" link, handles loading/error states
 - `src/components/AmericasWidget.tsx` — USD region, uses Privy wallet address
 - `src/components/EurozoneWidget.tsx` — EUR region, uses Privy wallet address
 - `supabase/functions/stripe-onramp-session/index.ts` — Deno edge function, server-side secret key holder

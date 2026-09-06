@@ -81,13 +81,19 @@ serve(async (req) => {
     params.set('destination_network', DESTINATION_NETWORK);
     params.append('destination_currencies[]', DESTINATION_CURRENCY);
     params.append('destination_networks[]', DESTINATION_NETWORK);
-    // RE-ENABLED FOR RETEST (previously confirmed broken — Stripe's "Add a new wallet"
-    // screen threw "You passed an empty string for 'wallet_address'" even with a
-    // correctly-formatted, correctly-displayed address). If this bug resurfaces, revert
-    // to leaving this disabled and rely on StripeWidget's copy-to-clipboard fallback.
-    if (cryptoAddress) {
-      params.set(`wallet_addresses[${DESTINATION_NETWORK}]`, cryptoAddress);
-    }
+    // DISABLED (bug resurfaced, confirmed live 2026-09-07): pre-filling wallet_addresses
+    // makes Stripe's own hosted page throw "Unable to register your wallet: You passed
+    // an empty string for 'wallet_address'" when the user clicks Continue on the
+    // pre-filled wallet — Stripe's internal /v1/crypto/internal/onramp_session/update
+    // call sends an empty value even though our request and the displayed address are
+    // both correct. This was previously "fixed" by Stripe, then broke again — don't
+    // re-enable without confirming with Stripe support first, and even then expect it
+    // to regress again. StripeWidget's copy-to-clipboard box is the address delivery
+    // mechanism now; the user pastes it manually on Stripe's page instead.
+    //
+    // if (cryptoAddress) {
+    //   params.set(`wallet_addresses[${DESTINATION_NETWORK}]`, cryptoAddress);
+    // }
     if (userIp) {
       params.set('customer_ip_address', userIp);
     }
@@ -117,8 +123,9 @@ serve(async (req) => {
       });
     }
 
-    // Returns both client_secret (for the embedded iframe SDK) and redirect_url (hosted
-    // fallback) from the same session — see StripeWidget.tsx for which one is active.
+    // redirect_url is what StripeWidget.tsx actually uses (hosted-redirect flow).
+    // client_secret is also returned in case the embedded iframe flow is ever revisited
+    // — see CLAUDE.md's Stripe section for why it isn't right now.
     return new Response(JSON.stringify({
       clientSecret: data.client_secret,
       redirectUrl: data.redirect_url,

@@ -50,9 +50,11 @@ async function extractErrorDetail(
  * third-party iframe rather than a fixable client-side issue. See git history on this
  * file for the embedded implementation if Stripe's iframe behavior is ever revisited.
  *
- * The wallet address is pre-filled into the session by the edge function. We still show
- * it here with a copy button as a convenience/fallback in case the user needs to paste
- * it in manually for any reason.
+ * The wallet address is NOT pre-filled into the session (disabled in the edge function —
+ * pre-filling makes Stripe's hosted page throw "Unable to register your wallet: You
+ * passed an empty string for 'wallet_address'" when confirming it, a recurring Stripe-
+ * side bug). We show it here with a copy button so the user can paste it manually
+ * on Stripe's wallet screen.
  */
 export default function StripeWidget({ fromCurrency = 'usd' }: StripeWidgetProps) {
   const { user } = useAuth();
