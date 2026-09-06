@@ -125,6 +125,13 @@ export default function StripeWidget({ fromCurrency = 'usd' }: StripeWidgetProps
         if (cancelled) return;
         const stripeOnramp = StripeOnramp(PUBLISHABLE_KEY);
         const session = stripeOnramp.createSession({ clientSecret });
+        // Log every event/status Stripe's hosted UI emits — the KYC/wallet-confirm steps
+        // run entirely inside Stripe's iframe, so this is the only visibility we have into
+        // what happened right before a step fails (e.g. transient errors on the wallet
+        // confirm screen right after submitting KYC details).
+        session.addEventListener('*', (e: { type: string; payload: { session: { status: string } } }) => {
+          console.log(`[Stripe Onramp] event: ${e.type}`, e.payload?.session);
+        });
         session.addEventListener('onramp_session_updated', (e) => {
           const onrampStatus = e.payload.session.status;
           if (onrampStatus === 'fulfillment_complete') {
