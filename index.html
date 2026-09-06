@@ -17,15 +17,6 @@
     <meta name="twitter:description" content="Secure multi-chain crypto wallet & banking platform. Manage EVM, Solana, XRP, and Bitcoin wallets with client-side encryption." />
     <meta name="twitter:image" content="/og-image.png?v=2" />
 
-    <!-- Stripe Crypto Onramp — must load directly from Stripe's domains (PCI compliance);
-         do not bundle or self-host these scripts. See StripeWidget.tsx.
-         async: without it, these being plain blocking <script> tags in <head> delays
-         the ENTIRE page (including the React app bundle below) until Stripe's domains
-         respond — turning any slowness/hiccup on Stripe's side into a full page stall.
-         StripeWidget.tsx's waitForStripeOnramp() already polls for window.StripeOnramp
-         with its own timeout + retry UI, so nothing else needs these to block. -->
-    <script src="https://js.stripe.com/dahlia/stripe.js" async></script>
-    <script src="https://crypto-js.stripe.com/crypto-onramp-outer.js" async></script>
   </head>
 
   <body>

@@ -44,6 +44,7 @@ const AppRoutes = () => {
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/auth" element={<Auth />} />
+        <Route path="/about" element={<PublicPageShell><About /></PublicPageShell>} />
         <Route path="/terms" element={<PublicPageShell><Terms /></PublicPageShell>} />
         <Route path="/privacy" element={<PublicPageShell><Privacy /></PublicPageShell>} />
         <Route path="/disclaimer" element={<PublicPageShell><Disclaimer /></PublicPageShell>} />
@@ -67,6 +68,11 @@ const AppRoutes = () => {
           <Route path="/disclaimer" element={<Disclaimer />} />
           <Route path="/refund-policy" element={<RefundPolicy />} />
         </Route>
+        {/* /auth only exists in the signed-out route table above — without this, a user
+            who just logged in (moving from /auth to /) and hits Back lands on /auth here,
+            which doesn't exist in this table, and falls through to the *, showing a real
+            404 instead of just bouncing them back to Home where they already belong. */}
+        <Route path="/auth" element={<Navigate to="/" replace />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </WalletActivationGate>

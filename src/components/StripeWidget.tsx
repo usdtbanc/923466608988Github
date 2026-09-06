@@ -1,7 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
-import { Loader2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Loader2, ExternalLink, Copy, Check } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
 
 interface StripeWidgetProps {
   /** ISO fiat currency the user pays with — 'usd' or 'eur' */
@@ -9,20 +10,6 @@ interface StripeWidgetProps {
 }
 
 type Status = 'loading' | 'ready' | 'error';
-
-// The Stripe Onramp script (loaded in index.html) exposes this global.
-declare global {
-  interface Window {
-    StripeOnramp?: (publishableKey: string) => {
-      createSession: (opts: { clientSecret: string }) => {
-        mount: (el: HTMLElement) => void;
-        addEventListener: (type: string, cb: (e: { payload: { session: { status: string } } }) => void) => void;
-      };
-    };
-  }
-}
-
-const PUBLISHABLE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY as string | undefined;
 
 /**
  * Pulls a human-readable message out of a failed supabase.functions.invoke() call.
@@ -51,148 +38,136 @@ async function extractErrorDetail(
   return 'Unknown error';
 }
 
-/** Waits for the async Stripe Onramp script (index.html) to attach window.StripeOnramp. */
-function waitForStripeOnramp(timeoutMs = 10000): Promise<NonNullable<Window['StripeOnramp']>> {
-  return new Promise((resolve, reject) => {
-    const start = Date.now();
-    const poll = () => {
-      if (window.StripeOnramp) return resolve(window.StripeOnramp);
-      if (Date.now() - start > timeoutMs) return reject(new Error('Stripe Onramp script failed to load'));
-      setTimeout(poll, 100);
-    };
-    poll();
-  });
-}
-
 /**
- * Uses Stripe's embedded Crypto Onramp widget (window.StripeOnramp, loaded via <script>
- * tags in index.html) — the session's client_secret is used to mount Stripe's UI directly
- * into this page, so the purchase flow never leaves the site. The wallet address is
- * pre-filled by the edge function (confirmed working after a Stripe-side fix).
+ * Uses Stripe's hosted-redirect Crypto Onramp flow: the edge function mints a session
+ * and returns a `redirect_url` on Stripe's own domain (crypto.link.com), which we send
+ * the user to directly, with `finish_url` set so Stripe brings them back here afterward.
+ *
+ * We deliberately don't use Stripe's embedded iframe SDK (window.StripeOnramp) — that
+ * flow kept failing partway through Stripe's own hosted KYC/wallet-confirm screens with
+ * an opaque "unknown error" (reproduced repeatedly, first attempt only, succeeding on
+ * retry), which points at something in running Stripe's hosted-mode internals inside a
+ * third-party iframe rather than a fixable client-side issue. See git history on this
+ * file for the embedded implementation if Stripe's iframe behavior is ever revisited.
+ *
+ * The wallet address is pre-filled into the session by the edge function. We still show
+ * it here with a copy button as a convenience/fallback in case the user needs to paste
+ * it in manually for any reason.
  */
 export default function StripeWidget({ fromCurrency = 'usd' }: StripeWidgetProps) {
   const { user } = useAuth();
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const { toast } = useToast();
+  const [redirectUrl, setRedirectUrl] = useState<string | null>(null);
+  const [walletAddress, setWalletAddress] = useState<string | null>(null);
   const [status, setStatus] = useState<Status>('loading');
   const [retryCount, setRetryCount] = useState(0);
+  const [copied, setCopied] = useState(false);
   const [errorDetail, setErrorDetail] = useState<string | null>(null);
 
-  // Fetch a fresh client secret from Stripe via the edge function
   useEffect(() => {
     if (!user) return;
 
     let cancelled = false;
 
     setStatus('loading');
-    setClientSecret(null);
+    setRedirectUrl(null);
+    setWalletAddress(null);
     setErrorDetail(null);
 
     supabase.functions.invoke('stripe-onramp-session', {
-      body: { sourceCurrency: fromCurrency },
+      body: {
+        sourceCurrency: fromCurrency,
+        returnUrl: window.location.href,
+      },
     }).then(async ({ data, error }) => {
       if (cancelled) return;
 
-      if (error || !data?.clientSecret) {
-        console.error('[Stripe Onramp] Failed to get client secret', error ?? data);
+      if (error || !data?.redirectUrl) {
+        console.error('[Stripe Onramp] Failed to get redirect URL', error ?? data);
         setErrorDetail(await extractErrorDetail(error, data));
         setStatus('error');
         return;
       }
 
-      setClientSecret(data.clientSecret);
+      setRedirectUrl(data.redirectUrl);
+      setWalletAddress(data.walletAddress ?? null);
+      setStatus('ready');
     });
 
     return () => { cancelled = true; };
   }, [user?.id, fromCurrency, retryCount]);
 
-  // Mount the Stripe Onramp embedded widget once we have a client secret
-  useEffect(() => {
-    if (!clientSecret || !containerRef.current) return;
-    if (!PUBLISHABLE_KEY) {
-      console.error('[Stripe Onramp] Missing VITE_STRIPE_PUBLISHABLE_KEY');
-      setErrorDetail('Missing VITE_STRIPE_PUBLISHABLE_KEY — not set in this build environment.');
-      setStatus('error');
-      return;
-    }
-
-    let cancelled = false;
-    const container = containerRef.current;
-    container.innerHTML = '';
-
-    waitForStripeOnramp()
-      .then((StripeOnramp) => {
-        if (cancelled) return;
-        const stripeOnramp = StripeOnramp(PUBLISHABLE_KEY);
-        const session = stripeOnramp.createSession({ clientSecret });
-        // Log every event/status Stripe's hosted UI emits — the KYC/wallet-confirm steps
-        // run entirely inside Stripe's iframe, so this is the only visibility we have into
-        // what happened right before a step fails (e.g. transient errors on the wallet
-        // confirm screen right after submitting KYC details).
-        session.addEventListener('*', (e: { type: string; payload: { session: { status: string } } }) => {
-          console.log(`[Stripe Onramp] event: ${e.type}`, e.payload?.session);
-        });
-        session.addEventListener('onramp_session_updated', (e) => {
-          const onrampStatus = e.payload.session.status;
-          if (onrampStatus === 'fulfillment_complete') {
-            console.log('[Stripe Onramp] purchase fulfilled', e.payload.session);
-          }
-          if (onrampStatus === 'rejected') {
-            console.warn('[Stripe Onramp] session rejected', e.payload.session);
-          }
-        });
-        session.mount(container);
-        setStatus('ready');
-      })
-      .catch((err) => {
-        if (cancelled) return;
-        console.error('[Stripe Onramp]', err);
-        setErrorDetail(err?.message ?? String(err));
-        setStatus('error');
-      });
-
-    return () => { cancelled = true; };
-  }, [clientSecret]);
+  const copyAddress = () => {
+    if (!walletAddress) return;
+    navigator.clipboard.writeText(walletAddress).then(() => {
+      setCopied(true);
+      toast({ title: 'Address copied' });
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
 
   return (
-    <div className="w-full h-full min-h-[600px] flex flex-col">
+    <div className="w-full h-full min-h-[400px] flex flex-col items-center justify-center p-6 text-center gap-4">
 
       {status === 'loading' && (
-        <div className="flex-1 flex items-center justify-center min-h-[600px]">
-          <div className="flex flex-col items-center gap-3 text-muted-foreground">
-            <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            <p className="text-sm">Initializing secure session…</p>
-          </div>
+        <div className="flex flex-col items-center gap-3 text-muted-foreground">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <p className="text-sm">Initializing secure session…</p>
         </div>
       )}
 
       {status === 'error' && (
-        <div className="flex-1 flex items-center justify-center min-h-[600px]">
-          <div className="flex flex-col items-center gap-4 text-center p-6">
-            <p className="text-sm text-muted-foreground">
-              Failed to initialize the payment widget. Please try again.
+        <div className="flex flex-col items-center gap-4">
+          <p className="text-sm text-muted-foreground">
+            Failed to initialize the payment session. Please try again.
+          </p>
+          {errorDetail && (
+            <p className="text-xs text-muted-foreground/70 max-w-md break-words font-mono bg-muted rounded px-3 py-2">
+              {errorDetail}
             </p>
-            {errorDetail && (
-              <p className="text-xs text-muted-foreground/70 max-w-md break-words font-mono bg-muted rounded px-3 py-2">
-                {errorDetail}
-              </p>
-            )}
-            <button
-              onClick={() => setRetryCount(c => c + 1)}
-              className="px-4 py-2 bg-primary text-primary-foreground text-sm rounded-md hover:bg-primary/90 transition-colors"
-            >
-              Retry
-            </button>
-          </div>
+          )}
+          <button
+            onClick={() => setRetryCount(c => c + 1)}
+            className="px-4 py-2 bg-primary text-primary-foreground text-sm rounded-md hover:bg-primary/90 transition-colors"
+          >
+            Retry
+          </button>
         </div>
       )}
 
-      {/* Stripe mounts its own iframe into this container once the session is ready */}
-      <div
-        ref={containerRef}
-        className="w-full flex-1"
-        style={{ minHeight: '600px', display: status === 'ready' ? 'block' : 'none' }}
-      />
+      {status === 'ready' && redirectUrl && (
+        <div className="flex flex-col items-center gap-4 w-full max-w-sm">
+          <p className="text-sm text-muted-foreground">
+            You'll be securely redirected to Stripe to complete your purchase. Once finished, you'll be brought back here.
+          </p>
+
+          {walletAddress && (
+            <div className="w-full space-y-1.5">
+              <p className="text-xs text-muted-foreground">
+                Your destination wallet address (pre-filled automatically on Stripe's page):
+              </p>
+              <button
+                onClick={copyAddress}
+                className="w-full flex items-center justify-between gap-2 px-3 py-2 rounded-md border border-primary/20 bg-card font-mono text-xs hover:border-primary/40 transition-colors"
+              >
+                <span className="truncate">{walletAddress}</span>
+                {copied ? (
+                  <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+                ) : (
+                  <Copy className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                )}
+              </button>
+            </div>
+          )}
+
+          <a
+            href={redirectUrl}
+            className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground text-sm font-medium rounded-md hover:bg-primary/90 transition-colors"
+          >
+            Continue to Stripe <ExternalLink className="w-4 h-4" />
+          </a>
+        </div>
+      )}
 
     </div>
   );
